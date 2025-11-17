@@ -1,0 +1,18 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "backend/pom.xml",
+      "use": "@vercel/java"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/backend/"
+    }
+  ],
+  "env": {
+    "JAVA_VERSION": "17"
+  }
+}
