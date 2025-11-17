@@ -2,15 +2,7 @@
 
 import { useRouter } from "next/navigation"
 import React, { createContext, useContext, useState, useEffect } from 'react'
-import { authApi } from '../lib/api/auth'
-
-interface User {
-  username: string
-  email: string
-  firstName: string
-  lastName: string
-  role: string
-}
+import { authApi, User } from '../lib/api/auth-api'
 
 interface AuthContextType {
   user: User | null
@@ -32,7 +24,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const storedToken = localStorage.getItem('auth_token')
     if (storedToken) {
       authApi.getCurrentUser(storedToken)
-        .then(userData => {
+        .then((userData) => {
           setToken(storedToken)
           setUser(userData)
         })
