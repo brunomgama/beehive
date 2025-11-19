@@ -8,47 +8,44 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import java.util.Arrays;
+
 /**
- * Configuration class for Cross-Origin Resource Sharing (CORS).
- * Sets up CORS mappings and configuration for the application endpoints.
+ * CORS configuration to allow cross-origin requests from frontend applications.
+ * This is necessary for production when frontend and backend are on different domains.
  */
 @Configuration
 public class CorsConfig implements WebMvcConfigurer {
 
-    /**
-     * Adds CORS mappings for the specified endpoint patterns.
-     * Allows requests from <code>http://localhost:3000 </code> with specified HTTP methods and headers.
-     *
-     * @param registry the {@link CorsRegistry} to configure
-     */
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/v1/**")
-//                .allowedOrigins("http://localhost:3000", "http://100.75.101.53:3000")
-                .allowedOrigins("http://localhost:3000", "https://grateful-showed-mardi-conditions.trycloudflare.com")
+        registry.addMapping("/**")
+                .allowedOrigins(
+                    "http://localhost:3000",
+                    "https://beehive-nine.vercel.app",
+                    "https://*.vercel.app"
+                )
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
-                .allowCredentials(true);
+                .allowCredentials(true)
+                .maxAge(3600);
     }
 
-    /**
-     * Provides a CORS configuration source bean for the application.
-     * Configures allowed origins, methods, headers, and credentials for <code>/v1/**</code> endpoints.
-     *
-     * @return the configured {@link CorsConfigurationSource}
-     */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.addAllowedOrigin("http://localhost:3000");
-//        configuration.addAllowedOrigin("http://100.75.101.53:3000");
-        configuration.addAllowedOrigin("https://grateful-showed-mardi-conditions.trycloudflare.com");
-        configuration.addAllowedMethod("*");
-        configuration.addAllowedHeader("*");
+        configuration.setAllowedOriginPatterns(Arrays.asList(
+            "http://localhost:*",
+            "https://beehive-nine.vercel.app",
+            "https://*.vercel.app"
+        ));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
+        configuration.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/v1/**", configuration);
+        source.registerCorsConfiguration("/**", configuration);
         return source;
     }
 }

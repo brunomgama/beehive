@@ -3,6 +3,7 @@
 import { useAuth } from '../contexts/auth-context'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
+import { LoadingPage } from './mobile/loading/loading-page'
 
 interface ProtectedRouteProps {
   children: React.ReactNode
@@ -19,11 +20,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   }, [user, isLoading, router])
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
-      </div>
-    )
+    return (<LoadingPage title="Accounts listing..." loadingText="Processing • Please wait • Processing • " />)
   }
 
   if (!user) {
