@@ -17,6 +17,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfigurationSource;
 
 /**
  * Configuration class for Spring Security.
@@ -33,6 +34,9 @@ public class SecurityConfig {
     @Autowired
     private CustomUserDetailsService userDetailsService;
 
+    @Autowired
+    private CorsConfigurationSource corsConfigurationSource;
+
     /**
      * Configures the security filter chain for HTTP requests.
      * Disables CSRF, sets up endpoint authorization, stateless session management,
@@ -46,9 +50,11 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
+                .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/v1/auth/**").permitAll()
                         .requestMatchers("/v1/public/**").permitAll()
+                        .requestMatchers("/api/auth/**", "/actuator/**", "/", "/health").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session

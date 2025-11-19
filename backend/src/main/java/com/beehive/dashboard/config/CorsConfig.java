@@ -25,7 +25,7 @@ public class CorsConfig implements WebMvcConfigurer {
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/v1/**")
 //                .allowedOrigins("http://localhost:3000", "http://100.75.101.53:3000")
-                .allowedOrigins("http://localhost:3000")
+                .allowedOrigins("http://localhost:3000", "https://grateful-showed-mardi-conditions.trycloudflare.com")
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
                 .allowCredentials(true);
@@ -42,6 +42,7 @@ public class CorsConfig implements WebMvcConfigurer {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.addAllowedOrigin("http://localhost:3000");
 //        configuration.addAllowedOrigin("http://100.75.101.53:3000");
+        configuration.addAllowedOrigin("https://grateful-showed-mardi-conditions.trycloudflare.com");
         configuration.addAllowedMethod("*");
         configuration.addAllowedHeader("*");
         configuration.setAllowCredentials(true);
