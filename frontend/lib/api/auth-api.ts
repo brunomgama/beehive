@@ -15,6 +15,7 @@ export interface RegisterData {
 }
 
 export interface AuthResponse {
+  id: number
   token: string
   username: string
   email: string
@@ -24,6 +25,7 @@ export interface AuthResponse {
 }
 
 export interface User {
+  id: number
   username: string
   email: string
   firstName: string
@@ -54,7 +56,9 @@ export const authApi = {
     }
 
     const data = await response.json()
+    console.log('Raw API response:', data) // Debug log
     return {
+      id: data.id,
       username: data.username,
       email: data.email,
       firstName: data.firstName,

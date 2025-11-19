@@ -4,12 +4,14 @@ import { useState, useEffect } from 'react'
 import { bankAccountApi, BankAccount } from '@/lib/api/bank-api'
 import { Carousel, CarouselContent, CarouselItem, CarouselApi } from "@/components/ui/carousel"
 import { LoadingPage } from '@/components/mobile/loading/loading-page'
+import { useAuth } from '@/contexts/auth-context'
 
 export function CarouselAccountCard() {
   const [accounts, setAccounts] = useState<BankAccount[]>([])
   const [loading, setLoading] = useState(true)
   const [api, setApi] = useState<CarouselApi>()
   const [current, setCurrent] = useState(0)
+  const { user } = useAuth()
 
   useEffect(() => {
     fetchAccounts()
@@ -28,13 +30,22 @@ export function CarouselAccountCard() {
   }, [api])
 
   const fetchAccounts = async () => {
-    const result = await bankAccountApi.getAll()
+    try {
+      const result = await bankAccountApi.getAll()
 
-    if (result.data) {
-      const userAccounts = result.data.filter(account => account.userId === 1)
-      setAccounts(userAccounts)
+      console.log('API result:', result.data)
+      console.log('Current user:', user)
+
+      if (result.data && user) {
+        const userAccounts = result.data.filter(account => account.userId === user.id)
+        setAccounts(userAccounts)
+        console.log('User accounts filtered:', userAccounts)
+      }
+    } catch (error) {
+      console.error('Error fetching accounts:', error)
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
   }
 
   const formatCurrency = (amount: number) => {
@@ -47,6 +58,8 @@ export function CarouselAccountCard() {
   if (loading) {
     return (<LoadingPage title="Accounts listing..." loadingText="Processing • Please wait • Processing • " />)
   }
+
+  console.log(accounts.length)
 
   return (
       <div className="space-y-4">

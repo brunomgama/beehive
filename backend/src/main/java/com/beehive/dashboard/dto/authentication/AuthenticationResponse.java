@@ -7,6 +7,7 @@ package com.beehive.dashboard.dto.authentication;
  */
 public class AuthenticationResponse {
 
+    private Long id;
     private String token;
     private String username;
     private String email;
@@ -19,6 +20,7 @@ public class AuthenticationResponse {
     /**
      * Constructs an AuthenticationResponse with all user details and token.
      *
+     * @param id User ID
      * @param token JWT token
      * @param username Username
      * @param email Email address
@@ -26,13 +28,30 @@ public class AuthenticationResponse {
      * @param lastName Last name
      * @param role User role
      */
-    public AuthenticationResponse(String token, String username, String email, String firstName, String lastName, String role) {
+    public AuthenticationResponse(Long id, String token, String username, String email, String firstName, String lastName, String role) {
+        this.id = id;
         this.token = token;
         this.username = username;
         this.email = email;
         this.firstName = firstName;
         this.lastName = lastName;
         this.role = role;
+    }
+
+    /**
+     * Gets the user ID.
+     * @return the user ID
+     */
+    public Long getId() {
+        return id;
+    }
+
+    /**
+     * Sets the user ID.
+     * @param id the user ID to set
+     */
+    public void setId(Long id) {
+        this.id = id;
     }
 
     /**

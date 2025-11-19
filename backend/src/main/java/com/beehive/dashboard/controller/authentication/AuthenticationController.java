@@ -45,7 +45,7 @@ public class AuthenticationController {
             logger.info("User registration successful for username: {}", request.getUsername());
 
             AuthenticationResponse response = new AuthenticationResponse(
-                    token, user.getUsername(), user.getEmail(),
+                    user.getId(), token, user.getUsername(), user.getEmail(),
                     user.getFirstName(), user.getLastName(), user.getRole().name()
             );
 
@@ -75,7 +75,7 @@ public class AuthenticationController {
             logger.info("Login successful for username: {}", request.getUsername());
 
             AuthenticationResponse response = new AuthenticationResponse(
-                    token, user.getUsername(), user.getEmail(),
+                    user.getId(), token, user.getUsername(), user.getEmail(),
                     user.getFirstName(), user.getLastName(), user.getRole().name()
             );
 
@@ -105,7 +105,7 @@ public class AuthenticationController {
             logger.info("Successfully retrieved current user: {}", user.getUsername());
 
             AuthenticationResponse response = new AuthenticationResponse(
-                    token, user.getUsername(), user.getEmail(),
+                    user.getId(), token, user.getUsername(), user.getEmail(),
                     user.getFirstName(), user.getLastName(), user.getRole().name()
             );
 
