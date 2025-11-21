@@ -87,7 +87,7 @@ export function CarouselAccountCard() {
             {accounts.length > 1 && (
               <div className="flex justify-center space-x-1">
                 {accounts.map((_, index) => (
-                  <button key={index} className={`w-1 h-1 rounded-full transition-colors ${index === current ? 'bg-primary' : 'bg-muted-foreground/70'}`}
+                  <button key={index} className={`w-1 h-1 rounded-full transition-colors ${index === current ? 'bg-white' : 'bg-muted-foreground/70'}`}
                     onClick={() => api?.scrollTo(index)}
                   />
                 ))}

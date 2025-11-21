@@ -139,13 +139,31 @@ const fragmentShader = `
     + vec4(-1.5468478, -3.6171484, 0.24762098, 0.0);
 
     buf[0] = sigmoid(buf[0]);
-    return vec4(buf[0].x , buf[0].y , buf[0].z, 1.0);
+    return vec4(
+      buf[0].x,
+      buf[0].y,
+      buf[0].z,
+      1.0);
   }
   
   void main() {
     vec2 uv = vUv * 2.0 - 1.0; uv.y *= -1.0;
-    gl_FragColor = cppn_fn(uv, 0.1 * sin(0.3 * iTime), 0.1 * sin(0.69 * iTime), 0.1 * sin(0.44 * iTime));
-  }
+    vec4 baseColor = cppn_fn(
+      uv,
+      0.1 * sin(0.3 * iTime),
+      0.1 * sin(0.69 * iTime),
+      0.1 * sin(0.44 * iTime)
+    );
+
+    vec3 warmPalette = vec3(1.0, 0.75, 0.2);
+    vec3 darkening    = vec3(0.25);
+
+    vec3 graded = mix(baseColor.rgb * darkening, warmPalette, baseColor.rgb);
+
+    graded = pow(graded, vec3(0.9));
+
+    gl_FragColor = vec4(graded, 1.0);
+      }
 `;
 
 const CPPNShaderMaterial = shaderMaterial(

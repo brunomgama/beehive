@@ -17,7 +17,7 @@ export const LiquidGlassCard = React.forwardRef<HTMLDivElement, LiquidGlassCardP
         ref={ref}
         className={cn(
           "w-full max-w-sm rounded-3xl p-6 shadow-2xl overflow-hidden",
-          "bg-black/20 backdrop-blur-xl border border-white/5",
+          "bg-white/3 backdrop-blur-xl border border-white/5",
           "text-white font-sans", className)}
         {...props}
       >
