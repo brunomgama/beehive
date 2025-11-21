@@ -6,7 +6,7 @@ import { Carousel, CarouselContent, CarouselItem, CarouselApi } from "@/componen
 import { LoadingPage } from '@/components/mobile/loading/loading-page'
 import { useAuth } from '@/contexts/auth-context'
 
-export function CarouselAccountCard() {
+export function CarouselAccountCard({ onAccountChange }: { onAccountChange: (accountId: number) => void }) {
   const [accounts, setAccounts] = useState<BankAccount[]>([])
   const [loading, setLoading] = useState(true)
   const [api, setApi] = useState<CarouselApi>()
@@ -29,24 +29,35 @@ export function CarouselAccountCard() {
     })
   }, [api])
 
+  useEffect(() => {
+    if (accounts.length > 0 && api) {
+      const selectedAccountId = accounts[current]?.id;
+      if (selectedAccountId) {
+        onAccountChange(selectedAccountId);
+      }
+    }
+  }, [current, accounts, api]);
+
   const fetchAccounts = async () => {
     try {
-      const result = await bankAccountApi.getAll()
-
-      console.log('API result:', result.data)
-      console.log('Current user:', user)
-
+      const result = await bankAccountApi.getAll();
+  
+      console.log('API result:', result.data);
+      console.log('Current user:', user);
+  
       if (result.data && user) {
-        const userAccounts = result.data.filter(account => account.userId === user.id)
-        setAccounts(userAccounts)
-        console.log('User accounts filtered:', userAccounts)
+        const userAccounts = result.data
+          .filter(account => account.userId === user.id)
+          .sort((a, b) => a.id! - b.id!);
+        setAccounts(userAccounts);
+        console.log('User accounts filtered and sorted:', userAccounts);
       }
     } catch (error) {
-      console.error('Error fetching accounts:', error)
+      console.error('Error fetching accounts:', error);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {

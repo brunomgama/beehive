@@ -1,80 +1,90 @@
 'use client'
 
 import { useAuth } from "@/contexts/auth-context"
-import { CarouselAccountCard } from './carousel-card'
 import { MobileBackground } from "../background/mobile-background"
-import { Avatar, AvatarImage } from "@/components/ui/avatar"
+
 import { useRouter } from "next/navigation"
 import { LiquidGlassCard } from "@/components/ui/liquid-glass"
-import { LiquidGlassCircleButton } from "@/components/ui/liquid-glass-button"
-import { ArrowRightLeft, Bell, Clock, Cog, Ellipsis, Home, MessageSquare, Plus, Search, Settings, User } from "lucide-react"
+import { useEffect, useState } from "react"
+import { movementApi, Movement, plannedMovementApi, PlannedMovement } from "@/lib/api/bank-api"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge-1"
+import { HeaderDashboard } from "./header-dashboard"
+import { OverviewDashboard } from "./overview-dashboard"
+import { MovementsDashboardTable } from "./movements-dashboard"
+import { PlannedMovementsDashboardTable } from "./planned-movements-dashboard"
 
 export function Dashboard() {
   const { user } = useAuth()
   const router = useRouter()
 
+  const [selectedAccountId, setSelectedAccountId] = useState<number | null>(null);
+  const [recentMovements, setRecentMovements] = useState<Movement[]>([]);
+  const [plannedMovements, setPlannedMovements] = useState<PlannedMovement[]>([]);
+
   const handleRedirect = (path: string) => {
     router.push(path);
+  };
+
+  useEffect(() => {
+    if (selectedAccountId) {
+      fetchRecentMovements(selectedAccountId);
+      fetchPlannedMovements(selectedAccountId);
+    }
+  }, [selectedAccountId]);
+
+  const fetchRecentMovements = async (accountId: number) => {
+    try {
+      const result = await movementApi.getAll();
+      if (result.data) {
+        const accountMovements = result.data
+          .filter((movement: Movement) => movement.accountId === accountId).reverse().slice(0, 5);
+        setRecentMovements(accountMovements);
+      }
+    } catch (error) {
+      console.error("Error fetching movements:", error);
+    }
+  };
+
+  const fetchPlannedMovements = async (accountId: number) => {
+    try {
+      const result = await plannedMovementApi.getAll();
+      if (result.data) {
+        const accountPlannedMovements = result.data
+          .filter((movement: PlannedMovement) => movement.accountId === accountId)
+          .sort((a, b) => new Date(a.nextExecution).getTime() - new Date(b.nextExecution).getTime())
+          .slice(0, 5);
+        setPlannedMovements(accountPlannedMovements);
+      }
+    } catch (error) {
+      console.error("Error fetching planned movements:", error);
+    }
   };
 
   return (
     <div className="relative min-h-screen">
       <MobileBackground />
       <div className="relative z-10 mx-auto p-4">
-        {/* Header Section */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <Avatar shape="rounded-corners" size="md">
-              <AvatarImage src="/profile_1.png" />
-            </Avatar>
-            <div>
-              <p className="text-sm text-white">Good morning!</p>
-              <h2 className="text-lg font-bold text-white">{user?.firstName} {user?.lastName}</h2>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <button className="p-2 rounded-md bg-white/10 hover:bg-white/20 focus:outline-none">
-              <Settings size={25} className="text-white" />
-            </button>
-            {/* <button className="p-2 rounded-md bg-white/10 hover:bg-white/20 focus:outline-none">
-              <Bell size={25} className="text-white" />
-            </button> */}
-          </div>
-        </div>
         
-            {/* Rest of the dashboard */}
-        <div className="space-y-4 mb-6">
-          <LiquidGlassCard>
-            <CarouselAccountCard />
-          </LiquidGlassCard>
-        </div>
+        {/* Header Section */}
+        {user != null && (
+          <HeaderDashboard user={user} />
+        )}
+        
+        {/* Movements in Account */}
+        <OverviewDashboard setSelectedAccountId={setSelectedAccountId} />
+        
+        {/* Movements Section */}
+        <MovementsDashboardTable recentMovements={recentMovements} />
 
-        <div className="grid grid-cols-4 gap-3 mt-4 mb-6 place-items-center">
-          <div className="flex flex-col items-center text-center">
-            <LiquidGlassCircleButton size={48} icon={<Plus size={20} />} onClick={() => handleRedirect('/home')}/>
-            <span className="text-xs text-white mt-1">Add</span>
-          </div>
-          <div className="flex flex-col items-center text-center">
-            <LiquidGlassCircleButton size={48} icon={<ArrowRightLeft size={20} />} onClick={() => handleRedirect('/settings')}/>
-            <span className="text-xs text-white mt-1">Movements</span>
-          </div>
-          <div className="flex flex-col items-center text-center">
-            <LiquidGlassCircleButton size={48} icon={<Clock size={20} />} onClick={() => handleRedirect('/messages')}/>
-            <span className="text-xs text-white mt-1">Planned</span>
-          </div>
-          <div className="flex flex-col items-center text-center">
-            <LiquidGlassCircleButton size={48} icon={<Ellipsis size={20} />} onClick={() => handleRedirect('/profile')}/>
-            <span className="text-xs text-white mt-1">More</span>
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          <LiquidGlassCard>
-            HELLO
-          </LiquidGlassCard>
-        </div>
+        {/* Planned Movements Section */}
+        <PlannedMovementsDashboardTable plannedMovements={plannedMovements}/>
 
       </div>
+
+      {/* <div className="fixed bottom-0 left-0 w-full bg-white h-12 shadow-md z-50 flex items-center justify-center">
+        <p className="text-gray-700 text-sm">Persistent Bar</p>
+      </div> */}
     </div>
   )
 }
