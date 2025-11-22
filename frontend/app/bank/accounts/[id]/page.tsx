@@ -141,6 +141,10 @@ export default function AccountDetailPage() {
                   {formatCurrency(account.balance)}
                 </p>
               </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Account Priority</label>
+                <p className="text-lg">{account.priority}</p>
+              </div>
             </div>
           </div>
         </div>

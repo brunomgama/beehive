@@ -17,7 +17,8 @@ export default function NewAccountPage() {
     accountName: '',
     iban: '',
     balance: 0,
-    type: 'CURRENT'
+    type: 'CURRENT',
+    priority: 1
   })
   const [allUsers, setAllUsers] = useState<UserProfile[]>([])
   
@@ -218,6 +219,13 @@ export default function NewAccountPage() {
                     </option>
                   ))}
                 </select>
+              </div>
+              
+              <div>
+                <Label htmlFor="accountPriority">Account Priority</Label>
+                <Input id="accountPriority" name="accountPriority" value={formData.priority}
+                  onChange={handleChange} placeholder="Choose a priority"
+                  className="mt-1 shadow-sm" required />
               </div>
             </div>
 

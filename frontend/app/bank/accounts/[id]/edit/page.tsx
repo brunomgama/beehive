@@ -17,7 +17,8 @@ export default function EditAccountPage() {
     iban: '',
     balance: 0,
     type: 'CURRENT',
-    userId: 1
+    userId: 1,
+    priority: 1,
   })
   const [userData, setUserData] = useState<UserProfile>({
     username: '',
@@ -62,7 +63,8 @@ export default function EditAccountPage() {
         iban: account.iban,
         balance: account.balance,
         type: account.type,
-        userId: account.userId
+        userId: account.userId,
+        priority: account.priority
       })
       setBalanceInput(account.balance.toString())
       
@@ -273,6 +275,13 @@ export default function EditAccountPage() {
                     </option>
                   ))}
                 </select>
+              </div>
+
+              <div>
+                <Label htmlFor="accountPriority">Account Priority</Label>
+                <Input id="accountPriority" name="accountPriority" value={formData.priority}
+                  onChange={handleChange} placeholder="Choose a priority"
+                  className="mt-1 shadow-sm" required />
               </div>
             </div>
 

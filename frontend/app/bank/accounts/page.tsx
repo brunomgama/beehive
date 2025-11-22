@@ -118,6 +118,7 @@ export default function BankAccountsPage() {
                 <TableHead>Type</TableHead>
                 <TableHead className="text-right">Balance</TableHead>
                 <TableHead>Account Owner</TableHead>
+                <TableHead>Priority</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -154,6 +155,9 @@ export default function BankAccountsPage() {
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
+                    </TableCell>
+                    <TableCell className="text-right font-medium">
+                      {formatCurrency(account.priority)}
                     </TableCell>
                   </TableRow>
                 ))
