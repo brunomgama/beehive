@@ -62,6 +62,12 @@ public class Account {
     private AccountType type;
 
     /**
+     * Priority in which we show the accounts.
+     * Which is more important
+     */
+    private Long priority;
+
+    /**
      * Default constructor for Account.
      */
     public Account() {
@@ -75,12 +81,13 @@ public class Account {
      * @param balance the initial balance
      * @param type the account type
      */
-    public Account(Long userId, String accountName, String iban, Double balance, AccountType type) {
+    public Account(Long userId, String accountName, String iban, Double balance, AccountType type, Long priority) {
         this.userId = userId;
         this.accountName = accountName;
         this.iban = iban;
         this.balance = balance;
         this.type = type;
+        this.priority = priority;
     }
 
     /**
@@ -177,5 +184,21 @@ public class Account {
      */
     public void setType(AccountType type) {
         this.type = type;
+    }
+
+    /**
+     * Gets the account priority.
+     * @return the account priority
+     */
+    public Long getPriority() {
+        return priority;
+    }
+
+    /**
+     * Sets the account priority.
+     * @param priority the account priority to set
+     */
+    public void setPriority(Long priority) {
+        this.priority = priority;
     }
 }

@@ -56,7 +56,9 @@ public class AccountService {
     public List<Account> getAll() {
         logger.info("Retrieving all accounts from database");
 
-        List<Account> accounts = accountRepository.findAll();
+        List<Account> accounts = accountRepository.findAll().
+                stream().
+                sorted((a, b) -> Math.toIntExact(a.getPriority() - b.getPriority())).toList();
         logger.info("Successfully retrieved {} accounts", accounts.size());
         logger.debug("Account retrieval completed - returning {} records", accounts.size());
 

@@ -48,7 +48,8 @@ export function CarouselAccountCard({ onAccountChange }: { onAccountChange: (acc
       if (result.data && user) {
         const userAccounts = result.data
           .filter(account => account.userId === user.id)
-          .sort((a, b) => a.id! - b.id!);
+          .sort((a, b) => a.id! - b.id!)
+          .sort((a, b) => a.priority! - b.priority!);
         setAccounts(userAccounts);
         console.log('User accounts filtered and sorted:', userAccounts);
       }

@@ -14,6 +14,7 @@ export interface BankAccount {
   iban: string
   balance: number
   type: AccountType
+  priority: number
 }
 
 export interface CreateAccountData {
@@ -22,6 +23,7 @@ export interface CreateAccountData {
   iban: string
   balance: number
   type: AccountType
+  priority: number
 }
 
 export interface UpdateAccountData {
@@ -30,6 +32,7 @@ export interface UpdateAccountData {
   balance: number
   type: AccountType
   userId: number
+  priority: number
 }
 
 export interface Movement {
