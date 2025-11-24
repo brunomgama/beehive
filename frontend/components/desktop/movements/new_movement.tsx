@@ -5,15 +5,15 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { ArrowLeft } from "lucide-react"
 import { LoadingPage } from "@/components/mobile/loading/loading-page"
-import { BankAccount, MovementStatus, MovementType } from "@/lib/api/bank-api"
+import { BankAccount, CreateMovementData, MovementStatus, MovementType } from "@/lib/api/bank-api"
 import { useRouter } from "next/navigation"
 import type React from "react"
+import { useState } from "react"
 
 interface NewMovementProps {
   accounts: BankAccount[];
   loading: boolean;
   error: string | null;
-  balanceInput: string;
   formData: {
     accountId: number;
     type: MovementType;
@@ -22,15 +22,91 @@ interface NewMovementProps {
     description: string;
     date: string;
   };
+  setFormData: React.Dispatch<React.SetStateAction<CreateMovementData>>;
   onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
-  onBalanceChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onBalanceKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void;
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
 }
 
-export function NewMovement({accounts, loading, error, balanceInput, formData, onChange, onBalanceChange, onBalanceKeyDown, onSubmit,
+export function NewMovement({accounts, loading, error, formData, setFormData, onChange, onSubmit,
 }: NewMovementProps) {
   const router = useRouter()
+  const [balanceInput, setBalanceInput] = useState('')
+
+  const convertValue = (value: string) => {
+    const cleanValue = value.replace(',', '.').replace(/[^0-9.]/g, '')
+    
+    const parts = cleanValue.split('.')
+    if (parts.length > 2) {
+      return parts[0] + '.' + parts.slice(1).join('')
+    }
+
+    return cleanValue
+  }
+
+  const handleBalanceKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    const allowedKeys = [
+      'Backspace', 'Delete', 'Tab', 'Escape', 'Enter',
+      'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'
+    ]
+    
+    const currentValue = balanceInput
+    const isDigit = /^[0-9]$/.test(e.key)
+    const isCommaOrPeriod = e.key === ',' || e.key === '.'
+    const isAllowedKey = allowedKeys.includes(e.key)
+    
+    // Get cursor position
+    const input = e.target as HTMLInputElement
+    const cursorPosition = input.selectionStart || 0
+    
+    // Allow navigation keys
+    if (isAllowedKey) {
+      return
+    }
+    
+    // Check for decimal separator rules
+    if (isCommaOrPeriod) {
+      // Don't allow if already has a decimal separator
+      if (currentValue.includes('.') || currentValue.includes(',')) {
+        e.preventDefault()
+        return
+      }
+    }
+    
+    // Check for digits after decimal
+    if (isDigit) {
+      const hasDecimal = currentValue.includes('.') || currentValue.includes(',')
+      if (hasDecimal) {
+        const decimalIndex = Math.max(currentValue.indexOf('.'), currentValue.indexOf(','))
+        
+        // Only restrict if cursor is after the decimal point
+        if (cursorPosition > decimalIndex) {
+          const digitsAfterDecimal = currentValue.length - decimalIndex - 1
+          
+          // Don't allow more than 2 digits after decimal
+          if (digitsAfterDecimal >= 2) {
+            e.preventDefault()
+            return
+          }
+        }
+      }
+    }
+    
+    // Block anything that's not a digit or decimal separator
+    if (!isDigit && !isCommaOrPeriod) {
+      e.preventDefault()
+    }
+  }
+
+  const handleBalanceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { value } = e.target
+    setBalanceInput(value)
+    
+    const convertedValue = convertValue(value)
+    setFormData(prev => ({
+      ...prev,
+      amount: parseFloat(convertedValue) || 0
+    }))
+  }
 
   return (
     <div className="w-full">
@@ -122,7 +198,7 @@ export function NewMovement({accounts, loading, error, balanceInput, formData, o
                   €
                 </span>
 
-                <Input id="balance" name="balance" type="text" value={balanceInput} onChange={onBalanceChange} onKeyDown={onBalanceKeyDown} 
+                <Input id="balance" name="balance" type="text" value={balanceInput} onChange={handleBalanceChange} onKeyDown={handleBalanceKeyDown} 
                     placeholder="0.00" className="shadow-sm pl-7 pr-12"/>
 
                 <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-xs mt-0.5">

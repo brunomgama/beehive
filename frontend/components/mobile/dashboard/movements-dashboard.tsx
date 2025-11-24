@@ -28,7 +28,13 @@ export function MovementsDashboardTable({ recentMovements }: { recentMovements: 
                         <p className="text-md font-bold text-color">
                           {movement.description.charAt(0).toUpperCase() + movement.description.slice(1)}
                         </p>
-                        <p className="text-xs text-color">{new Date(movement.date).toLocaleDateString()}</p>
+                        <p className="text-xs text-color">
+                        {new Date(movement.date).toLocaleDateString("en-GB", {
+                            weekday: "short",
+                            day: "2-digit",
+                            month: "short"
+                        })}
+                        </p>
                       </div>
                       { movement.status === 'PENDING' && (
                         <div className="ml-4">

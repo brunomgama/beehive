@@ -27,7 +27,13 @@ export function PlannedMovementsDashboardTable({ plannedMovements }: { plannedMo
                         <p className="text-md font-bold text-color">
                           {movement.description.charAt(0).toUpperCase() + movement.description.slice(1)}
                         </p>
-                        <p className="text-xs text-color">{new Date(movement.nextExecution).toLocaleDateString()}</p>
+                        <p className="text-xs text-color">
+                          {new Date(movement.nextExecution).toLocaleDateString("en-GB", {
+                              weekday: "short",
+                              day: "2-digit",
+                              month: "short"
+                          })}
+                        </p>
                       </div>
                     </div>
                     <div>

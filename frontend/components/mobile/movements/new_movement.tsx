@@ -11,29 +11,24 @@ interface NewMovementMobileProps {
   accounts: BankAccount[]
   loading: boolean
   error: string | null
-  balanceInput: string
   formData: {
     accountId: number
     type: MovementType
     category: string
+    amount: number
     status: MovementStatus
     description: string
     date: string
   }
   onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void
-  onBalanceChange: (e: React.ChangeEvent<HTMLInputElement>) => void
-  onBalanceKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void
-  onKeypadPress?: (value: string) => void
   onBack?: () => void
 }
 
-export function NewMovement({accounts, loading, error, balanceInput, formData, onChange, onBalanceChange, onBalanceKeyDown, onSubmit, onKeypadPress, onBack}: NewMovementMobileProps) {
+export function NewMovement({accounts, loading, error, formData, onChange, onSubmit, onBack}: NewMovementMobileProps) {
   const [payAmount, setPayAmount] = useState("");
 
-  const selectedAccount = accounts.find(
-    (a) => a.id === formData.accountId
-  )
+  const selectedAccount = accounts.find((a) => a.id === formData.accountId)
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
@@ -53,6 +48,7 @@ export function NewMovement({accounts, loading, error, balanceInput, formData, o
       </header>
 
       <form onSubmit={onSubmit} className="flex flex-col flex-1 px-4 pb-10 space-y-4">
+        <input type="hidden" name="status" value="CONFIRMED" />
         {/* Amount card */}
         <div className="rounded-3xl bg-card shadow-sm px-4 py-3 min-h-[5rem] flex flex-col justify-between">
           <div className="flex items-center justify-between text-xs text-normal-blue">
@@ -62,8 +58,9 @@ export function NewMovement({accounts, loading, error, balanceInput, formData, o
 
           <div className="mt-2 relative">
             <span className={`absolute left-0 top-1/2 -translate-y-1/2 text-2xl font-sf-display ${payAmount === "" ? "text-[#737373]" : "text-color"}`}>€</span>
-            <Input type="number" inputMode="decimal" placeholder="0.00" value={payAmount} onChange={(e) => setPayAmount(e.target.value)}
-              className="text-2xl text-color font-sf-display font-bold bg-transparent border-none focus-visible:ring-0 pl-6 pr-0 shadow-none"/>
+            <Input id="amount" name="amount" type="number" inputMode="decimal" placeholder="0.00" value={formData.amount === 0 ? "" : formData.amount} 
+              onChange={onChange} className="text-2xl text-color font-sf-display font-bold bg-transparent border-none focus-visible:ring-0 pl-6 pr-0 shadow-none"/>
+
 
 
             {/* Account selector (simple pill, hooked to formData.accountId) */}
@@ -143,7 +140,7 @@ export function NewMovement({accounts, loading, error, balanceInput, formData, o
         {/* Big gradient button */}
         <div className="sticky bottom-0 left-0 right-0 mt-auto bg-background pb-4 pt-2">
           <Button type="submit" disabled={loading} 
-            className="w-full rounded-full py-3 text-sm font-semibold text-white bg-gradient-to-r from-[#112D4E] to-[#3F72AF] 
+            className="w-full h-14 rounded-full py-3 text-sm font-semibold card-text-color bg-gradient-to-r from-[#112D4E] to-[#3F72AF] 
               shadow-md disabled:opacity-60 disabled:cursor-not-allowed">
             {loading ? "Creating..." : "Continue"}
           </Button>

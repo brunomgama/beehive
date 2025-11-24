@@ -22,7 +22,7 @@ export default function NewMovementPage() {
     date: new Date().toISOString().split('T')[0],
     status: 'PENDING'
   })
-  const [balanceInput, setBalanceInput] = useState('')
+  
   const [accounts, setAccounts] = useState<BankAccount[]>([])
   const [loading, setLoading] = useState(false)
   const [loadingAccounts, setLoadingAccounts] = useState(true)
@@ -61,106 +61,24 @@ export default function NewMovementPage() {
     e.preventDefault()
     setLoading(true)
     setError('')
-
-    if (!formData.description || formData.accountId === 0 || formData.amount <= 0) {
+  
+    const payload: CreateMovementData = {
+      ...formData,
+      status: isMobile ? 'CONFIRMED' : formData.status,
+    }
+  
+    if (!payload.description || payload.accountId === 0 || payload.amount <= 0) {
       setError('Please fill in all required fields')
       setLoading(false)
       return
     }
-
-    const result = await movementApi.create(formData)
-    
+    const result = await movementApi.create(payload)
     if (result.data) {
-      router.push('/bank/movements')
+      isMobile ? router.push('/') : router.push('/bank/movements')
     } else {
       setError(result.error || 'Failed to create movement')
     }
-    
     setLoading(false)
-  }
-
-  const handleBalanceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { value } = e.target
-    setBalanceInput(value)
-    
-    const convertedValue = convertValue(value)
-    setFormData(prev => ({
-      ...prev,
-      amount: parseFloat(convertedValue) || 0
-    }))
-  }
-
-  const handleBalanceKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    const allowedKeys = [
-      'Backspace', 'Delete', 'Tab', 'Escape', 'Enter',
-      'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'
-    ]
-    
-    const currentValue = balanceInput
-    const isDigit = /^[0-9]$/.test(e.key)
-    const isCommaOrPeriod = e.key === ',' || e.key === '.'
-    const isAllowedKey = allowedKeys.includes(e.key)
-    
-    // Get cursor position
-    const input = e.target as HTMLInputElement
-    const cursorPosition = input.selectionStart || 0
-    
-    // Allow navigation keys
-    if (isAllowedKey) {
-      return
-    }
-    
-    // Check for decimal separator rules
-    if (isCommaOrPeriod) {
-      // Don't allow if already has a decimal separator
-      if (currentValue.includes('.') || currentValue.includes(',')) {
-        e.preventDefault()
-        return
-      }
-    }
-    
-    // Check for digits after decimal
-    if (isDigit) {
-      const hasDecimal = currentValue.includes('.') || currentValue.includes(',')
-      if (hasDecimal) {
-        const decimalIndex = Math.max(currentValue.indexOf('.'), currentValue.indexOf(','))
-        
-        // Only restrict if cursor is after the decimal point
-        if (cursorPosition > decimalIndex) {
-          const digitsAfterDecimal = currentValue.length - decimalIndex - 1
-          
-          // Don't allow more than 2 digits after decimal
-          if (digitsAfterDecimal >= 2) {
-            e.preventDefault()
-            return
-          }
-        }
-      }
-    }
-    
-    // Block anything that's not a digit or decimal separator
-    if (!isDigit && !isCommaOrPeriod) {
-      e.preventDefault()
-    }
-  }
-
-  const convertValue = (value: string) => {
-    const cleanValue = value.replace(',', '.').replace(/[^0-9.]/g, '')
-    
-    const parts = cleanValue.split('.')
-    if (parts.length > 2) {
-      return parts[0] + '.' + parts.slice(1).join('')
-    }
-
-    return cleanValue
-  }
-
-  const handleKeypadPress = (val: string) => {
-    if (val === "backspace") {
-      setBalanceInput((prev) => prev.slice(0, -1))
-      return
-    }
-    setBalanceInput((prev) => (prev === "0" ? val : prev + val))
   }
 
   if (loadingAccounts) {
@@ -172,13 +90,9 @@ export default function NewMovementPage() {
       accounts={accounts}
       loading={loading}
       error={error}
-      balanceInput={balanceInput}
       formData={formData}
       onChange={handleChange}
-      onBalanceChange={handleBalanceChange}
-      onBalanceKeyDown={handleBalanceKeyDown}
       onSubmit={handleSubmit}
-      onKeypadPress={handleKeypadPress}
       onBack={() => router.push("/")}
     />
   ) : (
@@ -187,10 +101,8 @@ export default function NewMovementPage() {
         accounts={accounts}
         loading={loading}
         error={error}
-        balanceInput={balanceInput}
         formData={formData}
-        onBalanceChange={handleBalanceChange}
-        onBalanceKeyDown={handleBalanceKeyDown}
+        setFormData={setFormData}
         onChange={handleChange}
         onSubmit={handleSubmit}
       />
