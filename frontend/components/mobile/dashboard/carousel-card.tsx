@@ -74,46 +74,44 @@ export function CarouselAccountCard({ onAccountChange }: { onAccountChange: (acc
   console.log(accounts.length)
 
   return (
-      <div className="space-y-4">
-        {accounts.length > 0 ? (
-          <div>
-            <Carousel className="w-full" setApi={setApi}>
-              <CarouselContent>
-                {accounts.map((account) => (
-                  <CarouselItem key={account.id}>
-                    <div className="p-4 flex flex-col items-center justify-center text-center min-h-[120px]">
-                      <div className="mb-2">
-                        <h4 className="text-sm font-normal">
-                          {account.accountName}
-                        </h4>
-                      </div>
-                      <p className="text-lg font-bold">
-                        {formatCurrency(account.balance)}
-                      </p>
+    <div className="space-y-4">
+      {accounts.length > 0 ? (
+        <div>
+          <Carousel className="w-full" setApi={setApi}>
+            <CarouselContent>
+              {accounts.map((account) => (
+                <CarouselItem key={account.id}>
+                  <div className="p-4 flex flex-col items-center justify-center text-center min-h-[120px]">
+                    <div className="mb-2">
+                      <h4 className="text-sm font-normal">{account.accountName}</h4>
                     </div>
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-            </Carousel>
-            
-            {accounts.length > 1 && (
-              <div className="flex justify-center space-x-1">
-                {accounts.map((_, index) => (
-                  <button key={index} className={`w-1 h-1 rounded-full transition-colors ${index === current ? 'bg-white' : 'bg-muted-foreground/70'}`}
-                    onClick={() => api?.scrollTo(index)}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="p-4 bg-card rounded-lg border text-center">
-            <h3 className="text-sm font-semibold mb-1">No Accounts</h3>
-            <p className="text-xs text-muted-foreground">
-              Create your first bank account to get started!
-            </p>
-          </div>
-        )}
-      </div>
-  )
+                    <p className="text-lg font-bold">{formatCurrency(account.balance)}</p>
+                  </div>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+          </Carousel>
+
+          {accounts.length > 1 && (
+            <div className="flex justify-center space-x-1">
+              {accounts.map((_, index) => (
+                <button
+                  key={index}
+                  className={`w-1 h-1 rounded-full transition-colors ${
+                    index === current ? 'bg-white' : 'bg-muted-foreground/70'
+                  }`}
+                  onClick={() => api?.scrollTo(index)}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="p-4 bg-card rounded-lg border text-center">
+          <h3 className="text-sm font-semibold mb-1">No Accounts</h3>
+          <p className="text-xs text-muted-foreground">Create your first bank account to get started!</p>
+        </div>
+      )}
+    </div>
+  );
 }

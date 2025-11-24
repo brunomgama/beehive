@@ -16,6 +16,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "BeeHive",
   description: "Manage your life",
+  themeColor: "transparent",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+  },
 };
 
 export default function RootLayout({children}: Readonly<{children: React.ReactNode;}>) {
