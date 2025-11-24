@@ -12,12 +12,12 @@ export default function Home() {
   return (
     <ProtectedRoute>
       {isMobile ? (
-          <MobileDashboard />
-        ) : (
-          <DashboardLayout title="Home">
-            <DesktopDashboard />
-          </DashboardLayout>
-        )}
+        <MobileDashboard />
+      ) : (
+        <DashboardLayout title="Home">
+          <DesktopDashboard />
+        </DashboardLayout>
+      )}
     </ProtectedRoute>
   )
 }

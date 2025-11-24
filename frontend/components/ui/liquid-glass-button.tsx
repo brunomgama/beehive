@@ -15,9 +15,9 @@ export const LiquidGlassCircleButton = React.forwardRef<HTMLButtonElement, Liqui
   return (
     <button
       ref={ref}
-      style={{ width: size, height: size, minWidth: size, minHeight: size}}
+      style={{ width: 80, height: size, minWidth: size, minHeight: size}}
       className={cn(
-        "rounded-full flex items-center justify-center bg-white/20 backdrop-blur-xl shadow-xl text-white transition-all active:scale-95 hover:scale-105",
+        "rounded-full flex items-center justify-center bg-white/50 backdrop-blur-xl shadow-md card-text-color transition-all active:scale-95 hover:scale-105",
         className )}
       {...props}>
       {icon}

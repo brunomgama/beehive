@@ -1,14 +1,9 @@
 'use client'
 
 import { useAuth } from "@/contexts/auth-context"
-import { MobileBackground } from "../background/mobile-background"
 
-import { useRouter } from "next/navigation"
-import { LiquidGlassCard } from "@/components/ui/liquid-glass"
 import { useEffect, useState } from "react"
 import { movementApi, Movement, plannedMovementApi, PlannedMovement } from "@/lib/api/bank-api"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge-1"
 import { HeaderDashboard } from "./header-dashboard"
 import { OverviewDashboard } from "./overview-dashboard"
 import { MovementsDashboardTable } from "./movements-dashboard"
@@ -16,15 +11,10 @@ import { PlannedMovementsDashboardTable } from "./planned-movements-dashboard"
 
 export function Dashboard() {
   const { user } = useAuth()
-  const router = useRouter()
 
   const [selectedAccountId, setSelectedAccountId] = useState<number | null>(null);
   const [recentMovements, setRecentMovements] = useState<Movement[]>([]);
   const [plannedMovements, setPlannedMovements] = useState<PlannedMovement[]>([]);
-
-  const handleRedirect = (path: string) => {
-    router.push(path);
-  };
 
   useEffect(() => {
     if (selectedAccountId) {
@@ -63,7 +53,6 @@ export function Dashboard() {
 
   return (
     <div className="relative min-h-screen">
-      <MobileBackground />
       <div className="relative z-10 mx-auto p-4">
         
         {/* Header Section */}

@@ -11,27 +11,27 @@ export function MobileBackground() {
     <div className="fixed inset-0 -z-10 overflow-hidden">
       
       {/* OPTION 1 */}
-      <NeuralNetworkBackground />
+      {/* <NeuralNetworkBackground /> */}
 
       {/* OPTION 2 */}
-      {/* // Black and White
-      <MeshGradient className="w-full h-full absolute inset-0" colors={["#000000", "#1a1a1a", "#333333", "#ffffff"]}
+      {/* // Black and White */}
+      {/* <MeshGradient className="w-full h-full absolute inset-0" colors={["#000000", "#1a1a1a", "#333333", "#ffffff"]}
         speed={speed} style={{ backgroundColor: "#000000" }}/> */}
 
-      {/* // Blue Ocean Theme
-      <MeshGradient className="w-full h-full absolute inset-0" colors={["#0f172a", "#1e293b", "#3b82f6", "#60a5fa"]}
+      {/* // Blue Ocean Theme */}
+      {/* <MeshGradient className="w-full h-full absolute inset-0" colors={["#0f172a", "#1e293b", "#3b82f6", "#60a5fa"]}
         speed={speed} style={{ backgroundColor: "#0f172a" }}/> */}
 
-      {/* // Purple Galaxy Theme
-      <MeshGradient className="w-full h-full absolute inset-0" colors={["#1a0933", "#4c1d95", "#7c3aed", "#a855f7"]}
+      {/* // Purple Galaxy Theme */}
+      {/* <MeshGradient className="w-full h-full absolute inset-0" colors={["#1a0933", "#4c1d95", "#7c3aed", "#a855f7"]}
         speed={speed} style={{ backgroundColor: "#1a0933" }}/> */}
 
-      {/* // Green Forest Theme
-      <MeshGradient className="w-full h-full absolute inset-0" colors={["#064e3b", "#065f46", "#10b981", "#34d399"]}
+      {/* // Green Forest Theme */}
+      {/* <MeshGradient className="w-full h-full absolute inset-0" colors={["#064e3b", "#065f46", "#10b981", "#34d399"]}
         speed={speed} style={{ backgroundColor: "#064e3b" }}/> */}
 
-      {/* // Orange Sunset Theme
-      <MeshGradient className="w-full h-full absolute inset-0" colors={["#431407", "#9a3412", "#ea580c", "#fb923c"]}
+      {/* // Orange Sunset Theme */}
+      {/* <MeshGradient className="w-full h-full absolute inset-0" colors={["#431407", "#9a3412", "#ea580c", "#fb923c"]}
         speed={speed} style={{ backgroundColor: "#431407" }}/> */}
 
       {/* // Red Fire Theme

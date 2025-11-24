@@ -1,4 +1,5 @@
 import { Avatar, AvatarImage } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
 import { User } from "@/lib/api/auth-api"
 import { Settings } from "lucide-react"  
 
@@ -10,14 +11,14 @@ export function HeaderDashboard({ user }: { user: User }) {
               <AvatarImage src="/profile_1.png" />
             </Avatar>
             <div>
-              <p className="text-sm text-white">Good morning!</p>
-              <h2 className="text-lg font-bold text-white">{user?.firstName} {user?.lastName}</h2>
+              <p className="text-sm text-color">Good morning!</p>
+              <h2 className="text-lg font-bold text-color">{user?.firstName} {user?.lastName}</h2>
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <button className="p-2 rounded-md hover:bg-white/20 focus:outline-none">
-              <Settings size={25} className="text-white" />
-            </button>
+            <Button variant={"ghost"} size={"lg"} className="text-color">
+              <Settings/>
+            </Button>
           </div>
         </div>
     )

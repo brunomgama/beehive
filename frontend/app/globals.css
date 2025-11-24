@@ -6,24 +6,25 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar: var(--sidebar);
-  --color-chart-5: var(--chart-5);
+
+  --color-ring: var(--ring);
+  --color-border: var(--border);
+
+  --color-background-dark: var(--background-dark);
+
+
+  --color-background-light-blue: var(--light-blue);
+  --color-background-normal-blue: var(--normal-blue);
+  --color-background-dark-blue: var(--dark-blue);
+  --color-background-darker-blue: var(--darker-blue);
+
+
+
   --color-chart-4: var(--chart-4);
   --color-chart-3: var(--chart-3);
   --color-chart-2: var(--chart-2);
   --color-chart-1: var(--chart-1);
-  --color-ring: var(--ring);
   --color-input: var(--input);
-  --color-border: var(--border);
   --color-destructive: var(--destructive);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
@@ -112,11 +113,83 @@
   --color-ds-blue-900: var(----ds-blue-900);
   --color-ds-blue-700: var(----ds-blue-700);
   --color-ds-blue-200: var(----ds-blue-200);
+  --color-color-gray-very-dark: var(----color-gray-very-dark);
+  --color-color-gray-dark: var(----color-gray-dark);
+  --color-color-gray-medium: var(----color-gray-medium);
+  --color-color-gray-light: var(----color-gray-light);
+  --color-color-white: var(----color-white);
+  --color-bg-footer: var(----bg-footer);
+  --color-bg-dark: var(----bg-dark);
+  --color-clr-red: var(----clr-red);
+  --color-clr-orange: var(----clr-orange);
+  --color-clr-green: var(----clr-green);
+  --color-clr-blue: var(----clr-blue);
+}
+
+@font-face {
+  font-family: "SF Pro Display";
+  src: url("/fonts/SF-Pro-Display-Regular.otf") format("opentype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "SF Pro Text";
+  src: url("/fonts/SF-Pro-Text-Regular.otf") format("opentype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+.text-color {
+  color: var(--text-color)
+}
+
+.card-text {
+  color: var(--card-text-color);
+}
+
+.income-text {
+  color: var(--income-color);
+}
+
+.expense-text {
+  color: var(--expense-color);
+}
+
+.light-blue {
+  color: var(--light-blue);
+}
+
+.normal-blue {
+  color: var(--normal-blue);
+}
+
+.dark-blue {
+  color: var(--dark-blue);
+}
+
+.darker-blue {
+  color: var(--darker-blue);
 }
 
 :root {
+  --font-sf-display: "SF Pro Display", sans-serif;
+  --font-sf-text: "SF Pro Text", sans-serif;
+
+  --background: #F9F7F7;
+  --background-dark: #112D4E;
+  --text-color: #112D4E;
+  --card-text-color: #F9F7F7;
+
+  --income-color: #A3D78A;
+  --expense-color: #FF937E;
+
+  --light-blue: #F9F7F7;
+  --normal-blue: #DBE2EF;
+  --dark-blue: #3F72AF;
+  --darker-blue: #112D4E;
+
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
@@ -183,6 +256,17 @@
   --ds-cancelled-end: #6B7280; 
   --ds-failed-start: #EF4444;
   --ds-failed-end: #DC2626;
+  --clr-blue: #1890ff;
+  --clr-green: #01c3a8;
+  --clr-orange: #ffb741;
+  --clr-red: #a63d2a;
+  --bg-dark: #232228;
+  --bg-footer: #151419;
+  --color-white: #fff;
+  --color-gray-light: #ddd;
+  --color-gray-medium: #363636;
+  --color-gray-dark: #292929;
+  --color-gray-very-dark: #222127;
 }
 
 .dark {
