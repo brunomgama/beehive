@@ -28,7 +28,7 @@ export function OverviewDashboard({ setSelectedAccountId }: { setSelectedAccount
           <span className="text-xs text-color mt-1">Add</span>
         </div>
         <div className="flex flex-col items-center text-center">
-          <LiquidGlassCircleButton size={48} icon={<ArrowRightLeft size={20} />} onClick={() => handleRedirect("/settings")} />
+          <LiquidGlassCircleButton size={48} icon={<ArrowRightLeft size={20} />} onClick={() => handleRedirect("/bank/movements")} />
           <span className="text-xs text-color mt-1">Movements</span>
         </div>
         <div className="flex flex-col items-center text-center">

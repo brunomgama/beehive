@@ -7,12 +7,12 @@ export const metadata: Metadata = {
   description: "Manage your life",
   appleWebApp: {
     capable: true,
-    statusBarStyle: "black-translucent",
+    statusBarStyle: "default",
   },
 };
 
 export const viewport = {
-  themeColor: "transparent",
+  themeColor: "#F9F7F7",
 };
 
 export default function RootLayout({children}: Readonly<{children: React.ReactNode;}>) {

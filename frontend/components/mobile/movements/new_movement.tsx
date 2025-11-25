@@ -6,6 +6,7 @@ import { BankAccount, MovementStatus, MovementType } from "@/lib/api/bank-api"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useState } from "react"
+import { Switch } from "@/components/ui/switch"
 
 interface NewMovementMobileProps {
   accounts: BankAccount[]
@@ -48,7 +49,7 @@ export function NewMovement({accounts, loading, error, formData, onChange, onSub
       </header>
 
       <form onSubmit={onSubmit} className="flex flex-col flex-1 px-4 pb-10 space-y-4">
-        <input type="hidden" name="status" value="CONFIRMED" />
+        <Input type="hidden" name="status" value="CONFIRMED" />
         {/* Amount card */}
         <div className="rounded-3xl bg-card shadow-sm px-4 py-3 min-h-[5rem] flex flex-col justify-between">
           <div className="flex items-center justify-between text-xs text-normal-blue">
@@ -95,35 +96,21 @@ export function NewMovement({accounts, loading, error, formData, onChange, onSub
               <option value="OTHER">Other</option>
             </select>
           </div>
-
-          {/* <div className="flex flex-col space-y-1">
-            <span className="text-[#8A8A8A]">Date</span>
-            <input id="date" name="date" type="date" value={formData.date} onChange={onChange} className="bg-transparent text-text-color text-xs focus:outline-none"/>
-          </div> */}
-
-          {/* <div className="flex flex-col space-y-1 items-end">
-            <span className="text-[#8A8A8A]">Status</span>
-            <select
-              id="status"
-              name="status"
-              value={formData.status}
-              onChange={onChange}
-              className="bg-transparent text-text-color text-xs focus:outline-none"
-            >
-              <option value="PENDING">Pending</option>
-              <option value="CONFIRMED">Confirmed</option>
-              <option value="CANCELLED">Cancelled</option>
-              <option value="FAILED">Failed</option>
-            </select>
-          </div> */}
         </div>
+        
+          {/* <Switch name="default">
+            <Switch.Control defaultChecked label="Expense" value="source" />
+            <Switch.Control label="Income" value="output" />
+          </Switch>
+
+          <Input type="hidden" name="type" value={formData.type}/> */}
 
         {/* Description (simple input row) */}
         <div className="rounded-2xl bg-card shadow-sm px-4 py-3 min-h-[5rem] flex flex-col justify-between">
           <label className="block text-xs text-normal-blue mb-1">
             Description
           </label>
-          <input id="description" name="description" value={formData.description} onChange={onChange} placeholder="What is this movement?" 
+          <Input id="description" borderless name="description" value={formData.description} onChange={onChange} placeholder="What is this movement?" 
             className="w-full bg-transparent text-sm text-text-color focus:outline-none" maxLength={255}/>
           <p className="mt-1 text-[0.5rem] text-normal-blue">
             {formData.description.length}/255 characters

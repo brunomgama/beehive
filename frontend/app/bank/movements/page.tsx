@@ -10,8 +10,13 @@ import { movementApi, bankAccountApi, Movement, BankAccount } from '@/lib/api/ba
 import { getMovementTypeColor, getMovementStatusColor, getMovementCategoryColor } from '@/lib/bank/movement-colors'
 import { LoadingPage } from '@/components/mobile/loading/loading-page'
 import { DashboardLayout } from '@/components/desktop/sidebar/dashboard-layout'
+import { useIsMobile } from '@/hooks/use-mobile'
+import { MovementsList as MovementsPageMobile } from '@/components/mobile/movements/movements'
+import { MovementsList as MovementsPageDesktop } from '@/components/desktop/movements/movements'
 
 export default function MovementsPage() {
+  const isMobile = useIsMobile()
+
   const [movements, setMovements] = useState<Movement[]>([])
   const [accounts, setAccounts] = useState<BankAccount[]>([])
   const [filteredMovements, setFilteredMovements] = useState<Movement[]>([])
@@ -69,21 +74,6 @@ export default function MovementsPage() {
     }
   }
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'EUR'
-    }).format(amount)
-  }
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    })
-  }
-
   const getAccountName = (accountId: number) => {
     const account = accounts.find(acc => acc.id === accountId)
     return account?.accountName || 'Unknown Account'
@@ -94,97 +84,25 @@ export default function MovementsPage() {
   }
 
   return (
-    <DashboardLayout title="Bank Movements">
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex justify-between">
-          <div className="flex items-center space-x-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-8" />
-              <Input placeholder="Search movements..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-10"/>
-            </div>
-            <div className="text-sm text-gray-600">
-              {filteredMovements.length} of {movements.length} movements
-            </div>
-          </div>
-          <Button onClick={() => router.push('/bank/movements/new')} className="bg-primary hover:bg-primary-hover">
-            <Plus className="h-4 w-4 mr-2" />
-            Add Movement
-          </Button>
-        </div>
-
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-            {error}
-          </div>
-        )}
-
-        {/* Table */}
-        <div className="rounded-lg shadow-sm border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Description</TableHead>
-                <TableHead>Account</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead className="text-right">Amount</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredMovements.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={8} className="text-center py-8 text-gray-500">
-                    {searchTerm ? 'No movements match your search.' : 'No movements found.'}
-                  </TableCell>
-                </TableRow>
-              ) : (
-                filteredMovements.map((movement) => (
-                  <TableRow key={movement.id}>
-                    <TableCell className="font-medium">{movement.description}</TableCell>
-                    <TableCell>{getAccountName(movement.accountId)}</TableCell>
-                    <TableCell>
-                      <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getMovementTypeColor(movement.type)}`}>
-                        {movement.type}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getMovementCategoryColor(movement.category)}`}>
-                        {movement.category}
-                      </span>
-                    </TableCell>
-                    <TableCell className={`text-right font-medium ${movement.type === 'INCOME' ? 'text-green-600' : 'text-red-600'}`}>
-                      {movement.type === 'EXPENSE' ? '-' : '+'}{formatCurrency(movement.amount)}
-                    </TableCell>
-                    <TableCell>{formatDate(movement.date)}</TableCell>
-                    <TableCell>
-                      <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getMovementStatusColor(movement.status)}`}>
-                        {movement.status}
-                      </span>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end space-x-2">
-                        <Button size="sm" onClick={() => router.push(`/bank/movements/${movement.id}`)} >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button size="sm" onClick={() => router.push(`/bank/movements/${movement.id}/edit`)} >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button variant="destructive" size="sm" onClick={() => movement.id && handleDelete(movement.id)} >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </div>
-      </div>
-    </DashboardLayout>
-  )
+      (isMobile ? (
+          <MovementsPageMobile movements={movements} accounts={accounts}
+          onBack={() => router.push("/")} />
+        ) : (
+          <DashboardLayout title="Bank Movements">
+            <MovementsPageDesktop
+              movements={movements}
+              filteredMovements={filteredMovements}
+              accounts={accounts}
+              searchTerm={searchTerm}
+              error={error}
+              onSearchChange={(value) => setSearchTerm(value)}
+              onAdd={() => router.push('/bank/movements/new')}
+              onView={(id) => router.push(`/bank/movements/${id}`)}
+              onEdit={(id) => router.push(`/bank/movements/${id}/edit`)}
+              onDelete={handleDelete}
+              getAccountName={getAccountName}
+            />
+          </DashboardLayout>
+        ))
+    )
 }
