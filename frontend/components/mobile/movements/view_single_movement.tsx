@@ -1,191 +1,131 @@
 'use client'
 
-import { useMemo, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { Search } from 'lucide-react'
-import { Input } from '@/components/ui/input'
+import { CornerUpLeft, HelpCircle, Edit3, Trash2} from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import { Movement, BankAccount } from '@/lib/api/bank-api'
+import {formatCurrency, formatDayLabel, formatFullDate, getMovementCategoryColor, getMovementStatusColor, getMovementTypeColor} from '@/lib/bank/movement-colors'
 
 interface ViewMovementProps {
-  movements: Movement[]
-  accounts: BankAccount[]
+  movement: Movement
+  account?: BankAccount | null
+  onBack?: () => void
+  onEdit?: () => void
+  onDelete?: () => void
 }
 
-type MovementGroup = {
-  dateKey: string
-  label: string
-  total: number
-  movements: Movement[]
-}
-
-const formatCurrency = (amount: number) =>
-  new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'EUR',
-  }).format(amount)
-
-const formatTime = (dateString: string) =>
-  new Date(dateString).toLocaleTimeString('en-GB', {
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-
-const normalizeDate = (d: Date) =>
-  new Date(d.getFullYear(), d.getMonth(), d.getDate())
-
-const getDayLabel = (dateString: string) => {
-  const d = normalizeDate(new Date(dateString))
-  const today = normalizeDate(new Date())
-  const diffDays =
-    (today.getTime() - d.getTime()) / (1000 * 60 * 60 * 24)
-
-  if (diffDays === 0) return 'Today'
-  if (diffDays === 1) return 'Yesterday'
-
-  // e.g. "Fri, 21 Nov"
-  return d.toLocaleDateString('en-GB', {
-    weekday: 'short',
-    day: 'numeric',
-    month: 'short',
-  })
-}
-
-const groupByDay = (movements: Movement[]): MovementGroup[] => {
-  const map = new Map<string, MovementGroup>()
-
-  for (const m of movements) {
-    const d = new Date(m.date)
-    const dateKey = d.toISOString().split('T')[0]
-
-    if (!map.has(dateKey)) {
-      map.set(dateKey, {
-        dateKey,
-        label: getDayLabel(m.date),
-        total: 0,
-        movements: [],
-      })
-    }
-
-    const group = map.get(dateKey)!
-    group.movements.push(m)
-
-    // expenses count as negative for the total
-    const signedAmount = m.type === 'EXPENSE' ? -m.amount : m.amount
-    group.total += signedAmount
-  }
-
-  return Array.from(map.values()).sort((a, b) =>
-    a.dateKey < b.dateKey ? 1 : -1
-  )
-}
-
-export function ViewMovement({movements, accounts}: ViewMovementProps) {
-  const router = useRouter()
-  const [search, setSearch] = useState('')
-
-  const filtered = useMemo(() => {
-    const term = search.toLowerCase()
-
-    return movements.filter((m) => {
-      const account = accounts.find((a) => a.id === m.accountId)
-      const accountName = account?.accountName || ''
-
-      return (
-        m.description.toLowerCase().includes(term) ||
-        m.category.toLowerCase().includes(term) ||
-        m.status.toLowerCase().includes(term) ||
-        m.type.toLowerCase().includes(term) ||
-        accountName.toLowerCase().includes(term)
-      )
-    })
-  }, [movements, accounts, search])
-
-  const grouped = useMemo(() => groupByDay(filtered), [filtered])
+export function ViewMovement({movement, account, onBack, onEdit, onDelete}: ViewMovementProps) {
+  const isIncome = movement.type === 'INCOME'
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      {/* Header + search */}
-      <header className="px-4 pt-4 pb-3">
-        <h1 className="text-2xl font-bold text-color">Transactions</h1>
+    <div className="flex flex-col min-h-screen bg-background">
+      <header className="flex items-center justify-between px-4 pt-4 pb-3 mb-4">
+        <Button variant="outline" onClick={onBack}
+          className="w-12 h-12 rounded-2xl bg-white shadow-sm flex items-center justify-center">
+          <CornerUpLeft className="!h-5 !w-5 text-color" />
+        </Button>
 
-        <div className="mt-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-normal-blue" />
-            <Input
-              placeholder="Search movements"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-9 pr-3 h-10 rounded-full bg-card border-none shadow-sm text-sm"
-            />
-          </div>
-          <p className="mt-1 text-[11px] text-normal-blue">
-            {filtered.length} of {movements.length} movements
-          </p>
-        </div>
+        <h1 className="text-base font-semibold text-color">
+          Movement
+        </h1>
+
+        <Button variant="default" className="w-12 h-12 rounded-2xl bg-background-darker-blue shadow-sm flex items-center justify-center">
+          <HelpCircle className="!h-6 !w-6 card-text-color" />
+        </Button>
       </header>
 
-      {/* Content */}
-      <main className="flex-1 px-4 pb-4 space-y-6 overflow-y-auto">
-        {grouped.length === 0 ? (
-          <p className="text-sm text-normal-blue mt-4">
-            {search ? 'No movements match your search.' : 'No movements found.'}
+      <main className="flex-1 px-4 pb-6 space-y-4">
+        <section className="rounded-3xl bg-card shadow-sm px-4 py-4">
+          <div className="flex items-center justify-between text-xs text-normal-blue">
+            <span>{account ? account.accountName : 'Account'}</span>
+            {account?.iban && (
+              <span className="font-mono text-[10px]">
+                {account.iban}
+              </span>
+            )}
+          </div>
+
+          <div className="mt-3 flex items-end justify-between">
+            <div>
+              <p className={`text-3xl font-bold font-sf-display ${isIncome ? 'income-text' : 'expense-text'}`}>
+                {isIncome ? '+' : '-'}
+                {formatCurrency(movement.amount)}
+              </p>
+              <p className="mt-1 text-xs text-normal-blue">
+                {formatDayLabel(movement.date)}
+              </p>
+            </div>
+
+            <span className={`inline-flex px-3 py-1 rounded-full text-[11px] font-medium ${getMovementTypeColor(movement.type)}`}>
+              {movement.type}
+            </span>
+          </div>
+
+          <div className="mt-4 flex flex-wrap gap-2">
+            <span className={`inline-flex px-3 py-1 rounded-full text-[11px] font-medium ${getMovementCategoryColor(movement.category)}`}>
+              {movement.category}
+            </span>
+
+            <span className={`inline-flex px-3 py-1 rounded-full text-[11px] font-medium ${getMovementStatusColor(movement.status)}`}>
+              {movement.status}
+            </span>
+          </div>
+        </section>
+
+        <section className="rounded-2xl bg-card shadow-sm px-4 py-3">
+          <p className="text-[11px] text-normal-blue mb-1">
+            Description
           </p>
-        ) : (
-          grouped.map((group) => (
-            <section key={group.dateKey}>
-              {/* Day header + daily total */}
-              <div className="flex items-center justify-between mb-2">
-                <h2 className="text-base font-semibold text-color">
-                  {group.label}
-                </h2>
-                <span className={`text-sm font-semibold ${group.total >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                  {formatCurrency(group.total)}
-                </span>
-              </div>
+          <p className="text-sm font-semibold text-color break-words">
+            {movement.description || 'No description'}
+          </p>
+        </section>
 
-              {/* Movements for this day */}
-              <div className="space-y-2">
-                {group.movements.map((movement) => (
-                  <button key={movement.id} type="button" onClick={() => router.push(`/bank/movements/${movement.id}`)} className="w-full text-left" >
-                    <div className="flex items-center rounded-2xl bg-card shadow-sm px-4 py-3">
-                      {/* Left icon / initial */}
-                      <div className="w-10 h-10 rounded-2xl bg-background-darker-blue flex items-center justify-center mr-3">
-                        <span className="text-sm font-semibold card-text">
-                          {movement.description.trim().charAt(0).toUpperCase() || '•'}
-                        </span>
-                      </div>
+        <section className="rounded-2xl bg-card shadow-sm px-4 py-3 space-y-2 text-xs">
+          <div className="flex items-center justify-between">
+            <span className="text-normal-blue">Movement ID</span>
+            <span className="font-medium text-color">
+              #{movement.id}
+            </span>
+          </div>
 
-                      {/* Text */}
-                      <div className="flex-1">
-                        <p className="text-sm font-semibold text-color">
-                          {movement.description}
-                        </p>
-                        <p className="text-xs text-normal-blue">
-                          {formatTime(movement.date)}
-                        </p>
-                      </div>
+          <div className="flex items-center justify-between">
+            <span className="text-normal-blue">Account ID</span>
+            <span className="font-medium text-color">{account ? account.accountName : 'Account'}</span>
+              {/* {movement.accountId} */}
+          </div>
 
-                      {/* Amount */}
-                      <div className="ml-3 text-right">
-                        <p
-                          className={`text-sm font-semibold ${
-                            movement.type === 'INCOME'
-                              ? 'text-green-500'
-                              : 'text-red-500'
-                          }`}
-                        >
-                          {movement.type === 'EXPENSE' ? '-' : '+'}
-                          {formatCurrency(movement.amount)}
-                        </p>
-                      </div>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </section>
-          ))
-        )}
+          <div className="flex items-center justify-between">
+            <span className="text-normal-blue">Status</span>
+            <span className="font-medium text-color">
+              {movement.status}
+            </span>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <span className="text-normal-blue">Category</span>
+            <span className="font-medium text-color">
+              {movement.category}
+            </span>
+          </div>
+        </section>
       </main>
+
+      {/* Sticky actions */}
+      <footer className="sticky bottom-0 left-0 right-0 px-4 pb-5 pt-2 bg-background">
+        <div className="flex gap-3">
+          <Button type="button" variant="outline" className="flex-1 h-11 rounded-full text-xs font-semibold flex items-center justify-center"
+            onClick={onDelete} >
+            <Trash2 className="h-4 w-4 mr-2" />
+            Delete
+          </Button>
+          <Button type="button"
+            className="flex-1 h-11 rounded-full text-xs font-semibold flex items-center justify-center bg-background-darker-blue card-text-color shadow-md"
+            onClick={onEdit}>
+            <Edit3 className="h-4 w-4 mr-2" />
+            Edit
+          </Button>
+        </div>
+      </footer>
     </div>
   )
 }

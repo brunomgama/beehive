@@ -1,6 +1,6 @@
 import { CarouselAccountCard } from "./carousel-card";
 import { LiquidGlassCircleButton } from "@/components/ui/liquid-glass-button";
-import { ArrowRightLeft, Clock, Ellipsis, Plus } from "lucide-react";
+import { ArrowRightLeft, ChartArea, Clock, Ellipsis, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -32,8 +32,8 @@ export function OverviewDashboard({ setSelectedAccountId }: { setSelectedAccount
           <span className="text-xs text-color mt-1">Movements</span>
         </div>
         <div className="flex flex-col items-center text-center">
-          <LiquidGlassCircleButton size={48} icon={<Clock size={20} />} onClick={() => handleRedirect("/messages")} />
-          <span className="text-xs text-color mt-1">Planned</span>
+          <LiquidGlassCircleButton size={48} icon={<ChartArea size={20} />} onClick={() => handleRedirect("/analytics")} />
+          <span className="text-xs text-color mt-1">Analytics</span>
         </div>
         <div className="flex flex-col items-center text-center">
           <LiquidGlassCircleButton size={48} icon={<Ellipsis size={20} />} onClick={() => handleRedirect("/profile")} />

@@ -78,7 +78,13 @@ export default function MovementDetailPage() {
 
   return (
     (isMobile ? (
-        <ViewMovementMobile movements={movement ? [movement] : []} accounts={account ? [account] : []} />
+      <ViewMovementMobile
+        movement={movement}
+        account={account}
+        onBack={() => router.push('/bank/movements')}
+        onEdit={() => router.push(`/bank/movements/${id}/edit`)}
+        onDelete={handleDelete}
+      />
       ) : (
         <DashboardLayout title="Movement Details">
           <ViewMovementDesktop movement={movement}
@@ -86,6 +92,6 @@ export default function MovementDetailPage() {
             onEdit={() => router.push(`/bank/movements/${id}/edit`)}
             onDelete={handleDelete}/>
         </DashboardLayout>
-      ))
+    ))
   )
 }
