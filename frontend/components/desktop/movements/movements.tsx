@@ -13,16 +13,15 @@ type MovementsListProps = {
   searchTerm: string
   error: string
   accounts: BankAccount[]
-  onSearchChange: (value: string) => void
-  onAdd: () => void
-  onView: (id: number) => void
-  onEdit: (id: number) => void
-  onDelete: (id: number) => void
-
-  getAccountName: (accountId: number) => string
+  onSearchChangeAction: (value: string) => void
+  onAddAction: () => void
+  onViewAction: (id: number) => void
+  onEditAction: (id: number) => void
+  onDeleteAction: (id: number) => void
+  getAccountNameAction: (accountId: number) => string
 }
 
-export function MovementsList({movements, filteredMovements, searchTerm, error, accounts, onSearchChange, onAdd, onView, onEdit, onDelete, getAccountName}:
+export function MovementsList({movements, filteredMovements, searchTerm, error, accounts, onSearchChangeAction, onAddAction, onViewAction, onEditAction, onDeleteAction, getAccountNameAction}:
      MovementsListProps) {
 
     return (
@@ -32,13 +31,13 @@ export function MovementsList({movements, filteredMovements, searchTerm, error, 
                 <div className="flex items-center space-x-4">
                 <div className="relative">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-8" />
-                    <Input placeholder="Search movements..." value={searchTerm} onChange={(e) => onSearchChange(e.target.value)} className="pl-10"/>
+                    <Input placeholder="Search movements..." value={searchTerm} onChange={(e) => onSearchChangeAction(e.target.value)} className="pl-10"/>
                 </div>
                 <div className="text-sm text-gray-600">
                     {filteredMovements.length} of {movements.length} movements
                 </div>
                 </div>
-                <Button onClick={onAdd} className="bg-primary hover:bg-primary-hover">
+                <Button onClick={onAddAction} className="bg-primary hover:bg-primary-hover">
                 <Plus className="h-4 w-4 mr-2" />
                 Add Movement
                 </Button>
@@ -78,7 +77,7 @@ export function MovementsList({movements, filteredMovements, searchTerm, error, 
                         <TableCell className="font-medium">
                             {movement.description}
                         </TableCell>
-                        <TableCell>{getAccountName(movement.accountId)}</TableCell>
+                        <TableCell>{getAccountNameAction(movement.accountId)}</TableCell>
                         <TableCell>
                             <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getMovementTypeColor(movement.type)}`}>
                             {movement.type}
@@ -101,13 +100,13 @@ export function MovementsList({movements, filteredMovements, searchTerm, error, 
                         </TableCell>
                         <TableCell className="text-right">
                             <div className="flex justify-end space-x-2">
-                            <Button size="sm"onClick={() => movement.id && onView(movement.id)}>
+                            <Button size="sm"onClick={() => movement.id && onViewAction(movement.id)}>
                                 <Eye className="h-4 w-4" />
                             </Button>
-                            <Button size="sm" onClick={() => movement.id && onEdit(movement.id)}>
+                            <Button size="sm" onClick={() => movement.id && onEditAction(movement.id)}>
                                 <Edit className="h-4 w-4" />
                             </Button>
-                            <Button variant="destructive" size="sm" onClick={() => movement.id && onDelete(movement.id)}>
+                            <Button variant="destructive" size="sm" onClick={() => movement.id && onDeleteAction(movement.id)}>
                                 <Trash2 className="h-4 w-4" />
                             </Button>
                             </div>

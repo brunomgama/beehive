@@ -2,12 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Button } from '../../../components/ui/button'
-import { Input } from '../../../components/ui/input'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../../components/ui/table'
-import { Plus, Search, Edit, Trash2, Eye } from 'lucide-react'
 import { movementApi, bankAccountApi, Movement, BankAccount } from '@/lib/api/bank-api'
-import { getMovementTypeColor, getMovementStatusColor, getMovementCategoryColor } from '@/lib/bank/movement-colors'
 import { LoadingPage } from '@/components/mobile/loading/loading-page'
 import { DashboardLayout } from '@/components/desktop/sidebar/dashboard-layout'
 import { useIsMobile } from '@/hooks/use-mobile'
@@ -95,12 +90,12 @@ export default function MovementsPage() {
               accounts={accounts}
               searchTerm={searchTerm}
               error={error}
-              onSearchChange={(value) => setSearchTerm(value)}
-              onAdd={() => router.push('/bank/movements/new')}
-              onView={(id) => router.push(`/bank/movements/${id}`)}
-              onEdit={(id) => router.push(`/bank/movements/${id}/edit`)}
-              onDelete={handleDelete}
-              getAccountName={getAccountName}
+              onSearchChangeAction={(value) => setSearchTerm(value)}
+              onAddAction={() => router.push('/bank/movements/new')}
+              onViewAction={(id) => router.push(`/bank/movements/${id}`)}
+              onEditAction={(id) => router.push(`/bank/movements/${id}/edit`)}
+              onDeleteAction={handleDelete}
+              getAccountNameAction={getAccountName}
             />
           </DashboardLayout>
         ))

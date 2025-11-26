@@ -9,6 +9,7 @@ import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent,
 import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { useAuth } from "@/contexts/auth-context"
+import { Avatar, AvatarImage } from "@/components/ui/avatar"
 
 const navigation = [
   {
@@ -48,7 +49,9 @@ export function AppSidebar() {
     <Sidebar>
       <SidebarHeader className="p-4">
         <div className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-lg bg-primary" />
+            <Avatar shape="rounded-corners-large" size="sm">
+              <AvatarImage src="./web-app-manifest-192x192.png" />
+            </Avatar>
           <h2 className="text-lg font-semibold">Dashboard</h2>
         </div>
       </SidebarHeader>
