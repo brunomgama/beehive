@@ -24,15 +24,27 @@ export function OverviewDashboard({ setSelectedAccountId }: { setSelectedAccount
 
       <div className="grid grid-cols-4 gap-3 mt-4 mb-6 place-items-center">
         <div className="flex flex-col items-center text-center">
-          <LiquidGlassCircleButton size={48} icon={<Plus size={20} />} onClick={() => handleRedirect("/bank/movements/new")} />
+          <LiquidGlassCircleButton size={48} icon={
+            <Plus size={20} />} onClick={() => {
+              if (selectedAccountId) {
+                router.push(`/bank/movements/new?accountId=${selectedAccountId}`);
+              } else {
+                router.push("/bank/movements/new");
+              }
+            }} 
+          />
           <span className="text-xs text-color mt-1">Add</span>
         </div>
         <div className="flex flex-col items-center text-center">
-          <LiquidGlassCircleButton size={48} icon={<ArrowRightLeft size={20} />} onClick={() => handleRedirect("/bank/movements")} />
+          <LiquidGlassCircleButton size={48} icon={
+            <ArrowRightLeft size={20} />} onClick={() => handleRedirect("/bank/movements")}
+          />
           <span className="text-xs text-color mt-1">Movements</span>
         </div>
         <div className="flex flex-col items-center text-center">
-          <LiquidGlassCircleButton size={48} icon={<ChartArea size={20} />} onClick={() => handleRedirect("/analytics")} />
+          <LiquidGlassCircleButton size={48} icon={<ChartArea size={20} />} onClick={
+            () => handleRedirect("/analytics")}
+          />
           <span className="text-xs text-color mt-1">Analytics</span>
         </div>
         <div className="flex flex-col items-center text-center">

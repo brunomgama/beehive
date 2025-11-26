@@ -13,7 +13,6 @@ type MovementsListProps = {
   searchTerm: string
   error: string
   accounts: BankAccount[]
-
   onSearchChange: (value: string) => void
   onAdd: () => void
   onView: (id: number) => void

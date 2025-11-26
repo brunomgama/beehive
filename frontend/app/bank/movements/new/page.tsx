@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { movementApi, bankAccountApi, CreateMovementData, BankAccount } from '@/lib/api/bank-api'
 import { LoadingPage } from '@/components/mobile/loading/loading-page'
 import { DashboardLayout } from '@/components/desktop/sidebar/dashboard-layout'
@@ -10,8 +10,12 @@ import { NewMovement as NewMovementDesktop } from '@/components/desktop/movement
 import { NewMovement as NewMovementMobile } from '@/components/mobile/movements/new_movement'
 
 export default function NewMovementPage() {
-
   const isMobile = useIsMobile()
+  const router = useRouter()
+  const searchParams = useSearchParams()
+
+  const selectedAccountIdFromQuery = searchParams.get('accountId')
+  const selectedAccountId = selectedAccountIdFromQuery ? parseInt(selectedAccountIdFromQuery, 10) : null
 
   const [formData, setFormData] = useState<CreateMovementData>({
     accountId: 0,
@@ -27,7 +31,6 @@ export default function NewMovementPage() {
   const [loading, setLoading] = useState(false)
   const [loadingAccounts, setLoadingAccounts] = useState(true)
   const [error, setError] = useState('')
-  const router = useRouter()
 
   useEffect(() => {
     fetchAccounts()
@@ -38,10 +41,19 @@ export default function NewMovementPage() {
     const result = await bankAccountApi.getAll()
     
     if (result.data) {
-      setAccounts(result.data)
-      if (result.data.length > 0) {
-        setFormData(prev => ({ ...prev, accountId: result.data?.[0]?.id || 0 }))
+      const fetchedAccounts = result.data
+      setAccounts(fetchedAccounts)
+
+      let defaultAccountId = fetchedAccounts?.[0]?.id || 0
+
+      if (selectedAccountId) {
+        const exists = fetchedAccounts.some(a => a.id === selectedAccountId)
+        if (exists) {
+          defaultAccountId = selectedAccountId
+        }
       }
+
+      setFormData(prev => ({ ...prev, accountId: defaultAccountId }))
     } else {
       setError('Failed to fetch accounts')
     }
@@ -86,26 +98,12 @@ export default function NewMovementPage() {
   }
 
   return (isMobile ? (
-    <NewMovementMobile
-      accounts={accounts}
-      loading={loading}
-      error={error}
-      formData={formData}
-      onChange={handleChange}
-      onSubmit={handleSubmit}
-      onBack={() => router.push("/")}
-    />
+    <NewMovementMobile accounts={accounts} loading={loading} error={error} 
+    formData={formData} onChange={handleChange} onSubmit={handleSubmit} onBack={() => router.push("/")}/>
   ) : (
     <DashboardLayout title="Create New Movement">
-      <NewMovementDesktop
-        accounts={accounts}
-        loading={loading}
-        error={error}
-        formData={formData}
-        setFormData={setFormData}
-        onChange={handleChange}
-        onSubmit={handleSubmit}
-      />
+      <NewMovementDesktop accounts={accounts} loading={loading} error={error} 
+      formData={formData} setFormData={setFormData} onChange={handleChange} onSubmit={handleSubmit}/>
     </DashboardLayout>
   ))
 }
