@@ -18,33 +18,32 @@ export function MovementsDashboardTable({ recentMovements }: { recentMovements: 
               <ul className="space-y-2">
                 {recentMovements.map((movement) => (
                   <li key={movement.id} className="flex items-center justify-between text-sm">
-                    <div className="flex items-center">
-                      <div className="w-8 h-8 flex items-center justify-center rounded-lg mr-3 bg-background-dark">
+                    <div className="flex items-center flex-1 min-w-0">
+                      <div className="min-w-8 min-h-8 flex items-center justify-center rounded-lg mr-3 bg-background-dark">
                         <span className="text-lg card-text">
                           {movement.category[0].toUpperCase()}
                         </span>
                       </div>
-                      <div>
-                        <p className="text-md font-bold text-color">
+                      <div className="min-w-0 mr-4">
+                        <p className="text-md font-bold text-color truncate whitespace-nowrap">
                           {movement.description.charAt(0).toUpperCase() + movement.description.slice(1)}
                         </p>
                         <p className="text-xs text-color">
-                        {new Date(movement.date).toLocaleDateString("en-GB", {
+                          {new Date(movement.date).toLocaleDateString("en-GB", {
                             weekday: "short",
                             day: "2-digit",
-                            month: "short"
-                        })}
+                            month: "short"})}
                         </p>
                       </div>
                       { movement.status === 'PENDING' && (
-                        <div className="ml-4">
+                        <div className="ml-4 shrink-0">
                           <Badge variant={`pending`}>
                             {movement.status}
                           </Badge>
                         </div>
                       )}
                       { movement.status === 'CANCELLED' && (
-                        <div className="ml-4">
+                        <div className="ml-4 shrink-0">
                           <Badge variant={`cancelled`}>
                             {movement.status}
                           </Badge>
