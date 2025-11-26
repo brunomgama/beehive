@@ -34,6 +34,7 @@ export default function NewMovementPage() {
 
   useEffect(() => {
     fetchAccounts()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const fetchAccounts = async () => {
