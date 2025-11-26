@@ -33,7 +33,7 @@ export default function NewMovementPageClient() {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    fetchAccounts()
+    void fetchAccounts();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -65,10 +65,10 @@ export default function NewMovementPageClient() {
     const { name, value } = e.target
     setFormData(prev => ({
       ...prev,
-      [name]: name === 'amount' ? parseFloat(value) || 0 : 
-              name === 'accountId' ? parseInt(value) || 0 : value
-    }))
-  }
+      [name]:
+        name === "amount" ? parseFloat(value) || 0 : name === "accountId" ? parseInt(value, 10) || 0 : value,
+    }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -98,13 +98,13 @@ export default function NewMovementPageClient() {
     return (<LoadingPage title="Loading Accounts..." loadingText="Processing • Please wait • Processing • " />)
   }
 
-  return (isMobile ? (
-    <NewMovementMobile accounts={accounts} loading={loading} error={error} 
-    formData={formData} onChange={handleChange} onSubmit={handleSubmit} onBack={() => router.push("/")}/>
+  return isMobile ? (
+    <NewMovementMobile accounts={accounts} loading={loading} error={error} formData={formData}
+     onChange={handleChange} onSubmit={handleSubmit} onBack={() => router.push("/")}/>
   ) : (
     <DashboardLayout title="Create New Movement">
-      <NewMovementDesktop accounts={accounts} loading={loading} error={error} 
-      formData={formData} setFormData={setFormData} onChange={handleChange} onSubmit={handleSubmit}/>
+      <NewMovementDesktop accounts={accounts} loading={loading} error={error}
+        formData={formData} setFormData={setFormData} onChange={handleChange} onSubmit={handleSubmit}/>
     </DashboardLayout>
-  ))
+  );
 }

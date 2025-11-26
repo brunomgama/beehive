@@ -1,7 +1,7 @@
 'use client'
 
 import type React from "react"
-import { HelpCircle, Delete, CornerUpLeft } from "lucide-react"
+import { HelpCircle, CornerUpLeft } from "lucide-react"
 import { BankAccount, MovementStatus, MovementType } from "@/lib/api/bank-api"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
