@@ -10,7 +10,7 @@ import { useRouter } from "next/navigation"
 import type React from "react"
 import { useState } from "react"
 
-interface NewMovementProps {
+interface NewMovementDesktopProps {
   accounts: BankAccount[];
   loading: boolean;
   error: string | null;
@@ -27,8 +27,8 @@ interface NewMovementProps {
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
 }
 
-export function NewMovement({accounts, loading, error, formData, setFormData, onChange, onSubmit,
-}: NewMovementProps) {
+export function NewMovementDesktop({accounts, loading, error, formData, setFormData, onChange, onSubmit,
+}: NewMovementDesktopProps) {
   const router = useRouter()
   const [balanceInput, setBalanceInput] = useState('')
 

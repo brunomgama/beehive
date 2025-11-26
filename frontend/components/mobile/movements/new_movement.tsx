@@ -6,7 +6,6 @@ import { BankAccount, MovementStatus, MovementType } from "@/lib/api/bank-api"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useState } from "react"
-import { Switch } from "@/components/ui/switch"
 
 interface NewMovementMobileProps {
   accounts: BankAccount[]
@@ -26,7 +25,7 @@ interface NewMovementMobileProps {
   onBack?: () => void
 }
 
-export function NewMovement({accounts, loading, error, formData, onChange, onSubmit, onBack}: NewMovementMobileProps) {
+export function NewMovementMobile({accounts, loading, error, formData, onChange, onSubmit, onBack}: NewMovementMobileProps) {
   const [payAmount, setPayAmount] = useState("");
 
   const selectedAccount = accounts.find((a) => a.id === formData.accountId)
