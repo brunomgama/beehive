@@ -1,98 +1,108 @@
 'use client'
 
-import { useState, useEffect } from 'react';
-import { useRouter, useParams } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
-import { Movement, BankAccount, movementApi, bankAccountApi } from '@/lib/api/bank-api';
-import { DashboardLayout } from '@/components/desktop/sidebar/dashboard-layout';
-import { LoadingPage } from '@/components/mobile/loading/loading-page';
-import { useIsMobile } from '@/hooks/use-mobile';
-import { ViewMovement as ViewMovementMobile } from '@/components/mobile/movements/view_single_movement';
-import { ViewMovement as ViewMovementDesktop } from '@/components/desktop/movements/view_single_movement';
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { Button } from '../../../components/ui/button'
+import { Input } from '../../../components/ui/input'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../../components/ui/table'
+import { Plus, Search, Edit, Trash2, Eye } from 'lucide-react'
+import { movementApi, bankAccountApi, Movement, BankAccount } from '@/lib/api/bank-api'
+import { getMovementTypeColor, getMovementStatusColor, getMovementCategoryColor } from '@/lib/bank/movement-colors'
+import { LoadingPage } from '@/components/mobile/loading/loading-page'
+import { DashboardLayout } from '@/components/desktop/sidebar/dashboard-layout'
+import { useIsMobile } from '@/hooks/use-mobile'
+import { MovementsList as MovementsPageMobile } from '@/components/mobile/movements/movements'
+import { MovementsList as MovementsPageDesktop } from '@/components/desktop/movements/movements'
 
-export default function MovementDetailPage() {
-  const isMobile = useIsMobile();
-  const router = useRouter();
-  const params = useParams();
-  const id = parseInt(params.id as string);
+export default function MovementsPage() {
+  const isMobile = useIsMobile()
 
-  const [movement, setMovement] = useState<Movement | null>(null);
-  const [account, setAccount] = useState<BankAccount | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [movements, setMovements] = useState<Movement[]>([])
+  const [accounts, setAccounts] = useState<BankAccount[]>([])
+  const [filteredMovements, setFilteredMovements] = useState<Movement[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [searchTerm, setSearchTerm] = useState('')
+  const router = useRouter()
 
   useEffect(() => {
-    if (id) {
-      fetchMovement();
-    }
-  }, [id]);
+    fetchData()
+  }, [])
 
-  const fetchMovement = async () => {
-    setLoading(true);
-    const result = await movementApi.getById(id);
+  useEffect(() => {
+    const filtered = movements.filter(movement => {
+      const account = accounts.find(acc => acc.id === movement.accountId)
+      const accountName = account?.accountName || ''
+      
+      return movement.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        movement.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        movement.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        movement.status.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        accountName.toLowerCase().includes(searchTerm.toLowerCase())
+    })
+    setFilteredMovements(filtered)
+  }, [movements, accounts, searchTerm])
+
+  const fetchData = async () => {
+    setLoading(true)
+    const [movementsResult, accountsResult] = await Promise.all([
+      movementApi.getAll(),
+      bankAccountApi.getAll()
+    ])
     
-    if (result.data) {
-      setMovement(result.data);
-      const accountResult = await bankAccountApi.getById(result.data.accountId);
-      if (accountResult.data) {
-        setAccount(accountResult.data);
-      }
-      setError('');
+    if (movementsResult.data) {
+      setMovements(movementsResult.data)
     } else {
-      setError(result.error || 'Failed to fetch movement');
+      setError(movementsResult.error || 'Failed to fetch movements')
     }
-    setLoading(false);
-  };
 
-  const handleDelete = async () => {
-    if (!confirm('Are you sure you want to delete this movement?')) return;
+    if (accountsResult.data) {
+      setAccounts(accountsResult.data)
+    }
     
-    const result = await movementApi.delete(id);
+    setLoading(false)
+  }
+
+  const handleDelete = async (id: number) => {
+    if (!confirm('Are you sure you want to delete this movement?')) return
+    
+    const result = await movementApi.delete(id)
     if (result.status === 200) {
-      router.push('/bank/movements');
+      setMovements(movements.filter(movement => movement.id !== id))
     } else {
-      setError('Failed to delete movement');
+      setError('Failed to delete movement')
     }
-  };
+  }
+
+  const getAccountName = (accountId: number) => {
+    const account = accounts.find(acc => acc.id === accountId)
+    return account?.accountName || 'Unknown Account'
+  }
 
   if (loading) {
-    return <LoadingPage title="Loading Movement..." loadingText="Processing • Please wait • Processing • " />;
+    return (<LoadingPage title="Movements listing..." loadingText="Processing • Please wait • Processing • " />)
   }
 
-  if (error || !movement) {
-    return (
-      <DashboardLayout title="Movement Details">
-        <div>
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-            {error || 'Movement not found'}
-          </div>
-          <Button onClick={() => router.push('/bank/movements')} className="mt-4">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Movements
-          </Button>
-        </div>
-      </DashboardLayout>
-    );
-  }
-
-  return isMobile ? (
-    <ViewMovementMobile
-      movement={movement}
-      account={account}
-      onBack={() => router.push('/bank/movements')}
-      onEdit={() => router.push(`/bank/movements/${id}/edit`)}
-      onDelete={handleDelete}
-    />
-  ) : (
-    <DashboardLayout title="Movement Details">
-      <ViewMovementDesktop 
-        movement={movement}
-        account={account}
-        onBack={() => router.push('/bank/movements')}
-        onEdit={() => router.push(`/bank/movements/${id}/edit`)}
-        onDelete={handleDelete}
-      />
-    </DashboardLayout>
-  );
+  return (
+      (isMobile ? (
+          <MovementsPageMobile movements={movements} accounts={accounts}
+          onBack={() => router.push("/")} />
+        ) : (
+          <DashboardLayout title="Bank Movements">
+            <MovementsPageDesktop
+              movements={movements}
+              filteredMovements={filteredMovements}
+              accounts={accounts}
+              searchTerm={searchTerm}
+              error={error}
+              onSearchChange={(value) => setSearchTerm(value)}
+              onAdd={() => router.push('/bank/movements/new')}
+              onView={(id) => router.push(`/bank/movements/${id}`)}
+              onEdit={(id) => router.push(`/bank/movements/${id}/edit`)}
+              onDelete={handleDelete}
+              getAccountName={getAccountName}
+            />
+          </DashboardLayout>
+        ))
+    )
 }
