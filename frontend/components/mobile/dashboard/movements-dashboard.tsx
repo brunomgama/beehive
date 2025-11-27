@@ -2,6 +2,7 @@ import { Badge } from "@/components/ui/badge-1";
 import { Button } from "@/components/ui/button";
 import { LiquidGlassCard } from "@/components/ui/liquid-glass";
 import { Movement } from "@/lib/api/bank-api";
+import { MovementIcon } from "@/components/ui/movement-icon";
 import { useRouter } from "next/navigation";
 
 export function MovementsDashboardTable({ recentMovements }: { recentMovements: Movement[] }) {    
@@ -19,11 +20,7 @@ export function MovementsDashboardTable({ recentMovements }: { recentMovements: 
                 {recentMovements.map((movement) => (
                   <li key={movement.id} className="flex items-center justify-between text-sm">
                     <div className="flex items-center flex-1 min-w-0">
-                      <div className="min-w-8 min-h-8 flex items-center justify-center rounded-lg mr-3 bg-background-dark">
-                        <span className="text-lg card-text">
-                          {movement.category[0].toUpperCase()}
-                        </span>
-                      </div>
+                      <MovementIcon description={movement.description} category={movement.category} size="md" className="mr-3"/>
                       <div className="min-w-0 mr-4">
                         <p className="text-md font-bold text-color truncate whitespace-nowrap">
                           {movement.description.charAt(0).toUpperCase() + movement.description.slice(1)}

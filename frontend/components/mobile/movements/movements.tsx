@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Movement, BankAccount } from "@/lib/api/bank-api"
 import { formatCurrency, formatDayLabel, getMovementCategoryColor, getMovementStatusColor, getMovementTypeColor} from "@/lib/bank/movement-colors"
+import { MovementIcon } from "@/components/ui/movement-icon"
 
 interface MovementsListProps {
   movements: Movement[]
@@ -104,7 +105,7 @@ export function MovementsList({ movements, accounts, onBack }: MovementsListProp
         </div>
       )}
 
-      <div className="space-y-4  px-4">
+      <div className="space-y-4 px-4">
         {groupedByDay.map((group) => {
           const total = group.total
           const isPositive = total >= 0
@@ -125,11 +126,7 @@ export function MovementsList({ movements, accounts, onBack }: MovementsListProp
                   <button key={movement.id} type="button" onClick={() => movement.id && handleRowClick(movement.id)} 
                   className="w-full rounded-2xl bg-card shadow-sm px-3 py-3 flex items-center justify-between active:scale-[0.99] transition">
                     <div className="flex items-center space-x-3">
-                      <div className="w-8 h-8 rounded-full flex items-center justify-center bg-normal-blue/40">
-                        <span className="text-xs font-semibold text-color">
-                          {movement.category[0]?.toUpperCase()}
-                        </span>
-                      </div>
+                      <MovementIcon description={movement.description} category={movement.category} size="md"/>
 
                       <div className="flex flex-col items-start">
                         <p className="text-xs font-semibold text-color">
@@ -150,7 +147,6 @@ export function MovementsList({ movements, accounts, onBack }: MovementsListProp
                       </div>
                     </div>
 
-                    {/* Right side: amount */}
                     <div className="flex flex-col items-end">
                       <span className={`text-sm font-semibold ${movement.type === "INCOME" ? "income-text" : "expense-text" }`}>
                         {movement.type === "EXPENSE" ? "-" : "+"}

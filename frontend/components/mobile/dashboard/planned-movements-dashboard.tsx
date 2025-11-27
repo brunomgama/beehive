@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { LiquidGlassCard } from "@/components/ui/liquid-glass";
+import { MovementIcon } from "@/components/ui/movement-icon";
 import { PlannedMovement } from "@/lib/api/bank-api";
 import { useRouter } from "next/navigation";
 
@@ -18,11 +19,7 @@ export function PlannedMovementsDashboardTable({ plannedMovements }: { plannedMo
                 {plannedMovements.map((movement) => (
                   <li key={movement.id} className="flex items-center justify-between text-white text-sm">
                     <div className="flex items-center">
-                      <div className="w-8 h-8 flex items-center justify-center rounded-lg mr-3 bg-background-dark">
-                        <span className="text-lg card-text">
-                          {movement.category[0].toUpperCase()}
-                        </span>
-                      </div>
+                      <MovementIcon description={movement.description} category={movement.category} size="md" className="mr-3"/>
                       <div>
                         <p className="text-md font-bold text-color">
                           {movement.description.charAt(0).toUpperCase() + movement.description.slice(1)}
