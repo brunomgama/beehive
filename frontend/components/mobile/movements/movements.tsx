@@ -6,8 +6,9 @@ import { Search, CornerUpLeft, HelpCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Movement, BankAccount } from "@/lib/api/bank-api"
-import { formatCurrency, formatDayLabel, getMovementCategoryColor, getMovementStatusColor, getMovementTypeColor} from "@/lib/bank/movement-colors"
+import { getMovementCategoryColor, getMovementStatusColor, getMovementTypeColor} from "@/lib/bank/movement-colors"
 import { MovementIcon } from "@/components/ui/movement-icon"
+import { formatCurrency, formatDayLabel } from "@/lib/utils"
 
 interface MovementsListProps {
   movements: Movement[]

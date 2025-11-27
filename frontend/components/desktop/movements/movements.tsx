@@ -5,7 +5,8 @@ import { Input } from '../../../components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../../components/ui/table'
 import { Plus, Search, Edit, Trash2, Eye } from 'lucide-react'
 import { Movement, BankAccount } from '@/lib/api/bank-api'
-import { getMovementTypeColor, getMovementStatusColor, getMovementCategoryColor, formatDayLabel, formatCurrency } from '@/lib/bank/movement-colors'
+import { getMovementTypeColor, getMovementStatusColor, getMovementCategoryColor} from '@/lib/bank/movement-colors'
+import { formatCurrency, formatDayLabel } from '@/lib/utils'
 
 type MovementsListProps = {
   movements: Movement[]

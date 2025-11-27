@@ -3,7 +3,8 @@
 import { ArrowLeft, Edit, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Movement, BankAccount } from "@/lib/api/bank-api"
-import { formatCurrency, formatFullDate, getMovementCategoryColor, getMovementStatusColor, getMovementTypeColor } from "@/lib/bank/movement-colors"
+import { getMovementCategoryColor, getMovementStatusColor, getMovementTypeColor } from "@/lib/bank/movement-colors"
+import { formatCurrency, formatFullDate } from "@/lib/utils"
 
 interface ViewMovementProps {
   movement: Movement

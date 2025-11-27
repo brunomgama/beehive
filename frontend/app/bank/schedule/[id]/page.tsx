@@ -8,6 +8,7 @@ import { getMovementTypeColor, getMovementStatusColor, getMovementCategoryColor 
 import { BankAccount, bankAccountApi, PlannedMovement, plannedMovementApi } from '@/lib/api/bank-api'
 import { LoadingPage } from '@/components/mobile/loading/loading-page'
 import { DashboardLayout } from '@/components/desktop/sidebar/dashboard-layout'
+import { formatCurrency, formatDayLabel } from '@/lib/utils'
 
 export default function PlannedMovementDetailPage() {
   const [plannedMovement, setPlannedMovement] = useState<PlannedMovement | null>(null)
@@ -51,21 +52,6 @@ export default function PlannedMovementDetailPage() {
     } else {
       setError('Failed to delete plannedMovement')
     }
-  }
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'EUR'
-    }).format(amount)
-  }
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    })
   }
 
   if (loading) {
@@ -167,7 +153,7 @@ export default function PlannedMovementDetailPage() {
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Next Execution</label>
-                <p className="text-lg">{formatDate(plannedMovement.nextExecution)}</p>
+                <p className="text-lg">{formatDayLabel(plannedMovement.nextExecution)}</p>
               </div>
             </div>
           </div>

@@ -91,7 +91,7 @@ export interface IconMapping {
       bgColor: '#FFFFFF'
     },
     {
-      keywords: ['grocery', 'supermarket', 'lidl', 'aldi'],
+      keywords: ['grocery', 'supermarket'],
       iconPath: '🛒',
       iconType: 'emoji',
       bgColor: '#4CAF50'

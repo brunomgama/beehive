@@ -1,3 +1,4 @@
+// Example: Refactored new_movement.tsx (Desktop)
 'use client'
 
 import { Button } from "@/components/ui/button"
@@ -9,6 +10,11 @@ import { BankAccount, CreateMovementData, MovementStatus, MovementType } from "@
 import { useRouter } from "next/navigation"
 import type React from "react"
 import { useState } from "react"
+import { 
+  MovementTypeSelect,
+  MovementStatusSelect,
+  MovementCategorySelect 
+} from "@/components/ui/movement-selects"
 
 interface NewMovementDesktopProps {
   accounts: BankAccount[];
@@ -27,19 +33,24 @@ interface NewMovementDesktopProps {
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
 }
 
-export function NewMovementDesktop({accounts, loading, error, formData, setFormData, onChange, onSubmit,
+export function NewMovementDesktop({
+  accounts, 
+  loading, 
+  error, 
+  formData, 
+  setFormData, 
+  onChange, 
+  onSubmit,
 }: NewMovementDesktopProps) {
   const router = useRouter()
   const [balanceInput, setBalanceInput] = useState('')
 
   const convertValue = (value: string) => {
     const cleanValue = value.replace(',', '.').replace(/[^0-9.]/g, '')
-    
     const parts = cleanValue.split('.')
     if (parts.length > 2) {
       return parts[0] + '.' + parts.slice(1).join('')
     }
-
     return cleanValue
   }
 
@@ -54,35 +65,24 @@ export function NewMovementDesktop({accounts, loading, error, formData, setFormD
     const isCommaOrPeriod = e.key === ',' || e.key === '.'
     const isAllowedKey = allowedKeys.includes(e.key)
     
-    // Get cursor position
     const input = e.target as HTMLInputElement
     const cursorPosition = input.selectionStart || 0
     
-    // Allow navigation keys
-    if (isAllowedKey) {
-      return
-    }
+    if (isAllowedKey) return
     
-    // Check for decimal separator rules
     if (isCommaOrPeriod) {
-      // Don't allow if already has a decimal separator
       if (currentValue.includes('.') || currentValue.includes(',')) {
         e.preventDefault()
         return
       }
     }
     
-    // Check for digits after decimal
     if (isDigit) {
       const hasDecimal = currentValue.includes('.') || currentValue.includes(',')
       if (hasDecimal) {
         const decimalIndex = Math.max(currentValue.indexOf('.'), currentValue.indexOf(','))
-        
-        // Only restrict if cursor is after the decimal point
         if (cursorPosition > decimalIndex) {
           const digitsAfterDecimal = currentValue.length - decimalIndex - 1
-          
-          // Don't allow more than 2 digits after decimal
           if (digitsAfterDecimal >= 2) {
             e.preventDefault()
             return
@@ -91,7 +91,6 @@ export function NewMovementDesktop({accounts, loading, error, formData, setFormD
       }
     }
     
-    // Block anything that's not a digit or decimal separator
     if (!isDigit && !isCommaOrPeriod) {
       e.preventDefault()
     }
@@ -124,9 +123,8 @@ export function NewMovementDesktop({accounts, loading, error, formData, setFormD
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <Label htmlFor="accountId">Account *</Label>
-              <select id="accountId" name="accountId" value={formData.accountId} onChange={onChange}
-                className="mt-1 w-full px-3 py-2 border rounded-md shadow-sm"
-                required >
+              <select id="accountId" name="accountId" value={formData.accountId} 
+              onChange={onChange}className="mt-1 w-full px-3 py-2 border rounded-md shadow-sm" required >
                 <option value={0}>Select an account</option>
                 {accounts.map((account) => (
                   <option key={account.id} value={account.id}>
@@ -136,56 +134,23 @@ export function NewMovementDesktop({accounts, loading, error, formData, setFormD
               </select>
             </div>
 
-            <div>
-              <Label htmlFor="type">Movement Type *</Label>
-              <select id="type" name="type" value={formData.type} onChange={onChange}
-                className="mt-1 w-full px-3 py-2 border rounded-md shadow-sm">
-                <option value="EXPENSE">Expense</option>
-                <option value="INCOME">Income</option>
-              </select>
-            </div>
+            <MovementTypeSelect id="type" name="type" label="Movement Type" value={formData.type} onChange={onChange} required/>
           </div>
 
           {/* Row 2: category + status */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <Label htmlFor="category">Category *</Label>
-              <select id="category" name="category" value={formData.category} onChange={onChange}
-                className="mt-1 w-full px-3 py-2 border rounded-md shadow-sm">
-                <option value="SHOPPING">Shopping</option>
-                <option value="NET">Internet</option>
-                <option value="TECH">Tech</option>
-                <option value="FOOD_DRINKS">Food/Drinks</option>
-                <option value="TRANSPORT">Transport</option>
-                <option value="ENTERTAINMENT">Entertainment</option>
-                <option value="HEALTH">Health</option>
-                <option value="UTILITIES">Utilities</option>
-                <option value="EDUCATION">Education</option>
-                <option value="STREAMING_SERVICES">Streaming</option>
-                <option value="OTHER">Other</option>
-              </select>
-            </div>
+            <MovementCategorySelect id="category" name="category" label="Category" value={formData.category} onChange={onChange} required/>
 
-            <div>
-              <Label htmlFor="status">Status *</Label>
-              <select id="status" name="status" value={formData.status} onChange={onChange}
-                className="mt-1 w-full px-3 py-2 border rounded-md shadow-sm">
-                <option value="PENDING">Pending</option>
-                <option value="CONFIRMED">Confirmed</option>
-                <option value="CANCELLED">Cancelled</option>
-                <option value="FAILED">Failed</option>
-              </select>
-            </div>
+            <MovementStatusSelect id="status" name="status" label="Status" value={formData.status} onChange={onChange} required/>
           </div>
 
           {/* Description */}
           <div>
             <Label htmlFor="description">Description *</Label>
-            <Input id="description" name="description" value={formData.description} onChange={onChange} placeholder="Enter movement description" 
-                className="mt-1 shadow-sm" maxLength={255} required/>
+            <Input id="description" name="description" value={formData.description} onChange={onChange} 
+              placeholder="Enter movement description" className="mt-1 shadow-sm" maxLength={255} required/>
             <p className="text-sm text-gray-500 mt-1">
-              Maximum 255 characters. Current length:{" "}
-              {formData.description.length}
+              Maximum 255 characters. Current length: {formData.description.length}
             </p>
           </div>
 
@@ -197,10 +162,8 @@ export function NewMovementDesktop({accounts, loading, error, formData, setFormD
                 <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-sm mt-0.5">
                   €
                 </span>
-
-                <Input id="balance" name="balance" type="text" value={balanceInput} onChange={handleBalanceChange} onKeyDown={handleBalanceKeyDown} 
-                    placeholder="0.00" className="shadow-sm pl-7 pr-12"/>
-
+                <Input id="balance" name="balance" type="text" value={balanceInput} onChange={handleBalanceChange} 
+                onKeyDown={handleBalanceKeyDown} placeholder="0.00" className="shadow-sm pl-7 pr-12"/>
                 <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-xs mt-0.5">
                   EUR
                 </span>

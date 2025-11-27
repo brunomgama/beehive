@@ -11,6 +11,7 @@ import { getAccountTypeColor } from '@/lib/bank/account-colors'
 import { UserProfile, userProfileApi } from '@/lib/api/user-api'
 import { LoadingPage } from '@/components/mobile/loading/loading-page'
 import { DashboardLayout } from '@/components/desktop/sidebar/dashboard-layout'
+import { formatCurrency } from '@/lib/utils'
 
 export default function BankAccountsPage() {
   const [accounts, setAccounts] = useState<BankAccount[]>([])
@@ -64,13 +65,6 @@ export default function BankAccountsPage() {
     } else {
       setError('Failed to delete account')
     }
-  }
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'EUR'
-    }).format(amount)
   }
 
   const getUserName = (userId: number) => {

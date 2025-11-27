@@ -9,6 +9,7 @@ import { BankAccount, bankAccountApi } from '@/lib/api/bank-api'
 import { UserProfile, userProfileApi } from '@/lib/api/user-api'
 import { LoadingPage } from '@/components/mobile/loading/loading-page'
 import { DashboardLayout } from '@/components/desktop/sidebar/dashboard-layout'
+import { formatCurrency } from '@/lib/utils'
 
 export default function AccountDetailPage() {
   const [account, setAccount] = useState<BankAccount | null>(null)
@@ -53,13 +54,6 @@ export default function AccountDetailPage() {
     } else {
       setError('Failed to delete account')
     }
-  }
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'EUR'
-    }).format(amount)
   }
 
   if (loading) {

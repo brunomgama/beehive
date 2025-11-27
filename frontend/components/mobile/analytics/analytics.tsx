@@ -4,8 +4,8 @@ import { useMemo, useState } from 'react';
 import { CornerUpLeft, HelpCircle, TrendingUp, TrendingDown, Wallet } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Movement, BankAccount } from '@/lib/api/bank-api';
-import { formatCurrency } from '@/lib/bank/movement-colors';
 import { LiquidGlassCard } from '@/components/ui/liquid-glass';
+import { formatCurrency } from '@/lib/utils';
 
 interface AnalyticsProps {
   movements: Movement[];

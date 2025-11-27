@@ -8,6 +8,7 @@ import { useAuth } from '@/contexts/auth-context'
 import { MeshGradient } from '@paper-design/shaders-react'
 import { Eye } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { formatCurrency } from '@/lib/utils'
 
 export function CarouselAccountCard({ onAccountChange }: { onAccountChange: (accountId: number) => void }) {
   const [accounts, setAccounts] = useState<BankAccount[]>([])
@@ -62,13 +63,6 @@ export function CarouselAccountCard({ onAccountChange }: { onAccountChange: (acc
       setLoading(false);
     }
   };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'EUR'
-    }).format(amount)
-  }
 
   if (loading) {
     return (<LoadingPage title="Accounts listing..." loadingText="Processing • Please wait • Processing • " />)

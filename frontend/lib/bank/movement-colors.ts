@@ -69,27 +69,3 @@ export const getMovementRecurrenceColor = (type: MovementRecurrence) => {
       return 'bg-muted/50 text-muted-foreground'
   }
 }
-
-export const formatCurrency = (amount: number) =>
-  new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "EUR",
-  }).format(amount)
-
-export const formatDayLabel = (dateStr: string) =>
-  new Date(dateStr).toLocaleDateString("en-GB", {
-    weekday: "short",
-    day: "2-digit",
-    month: "short",
-  })
-
-export const formatFullDate = (dateStr: string) =>
-  new Date(dateStr).toLocaleString("en-GB", {
-    weekday: "short",
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  })
-

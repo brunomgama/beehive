@@ -10,6 +10,7 @@ import { bankAccountApi, BankAccount, PlannedMovement, plannedMovementApi } from
 import { getMovementTypeColor, getMovementStatusColor, getMovementCategoryColor, getMovementRecurrenceColor } from '@/lib/bank/movement-colors'
 import { LoadingPage } from '@/components/mobile/loading/loading-page'
 import { DashboardLayout } from '@/components/desktop/sidebar/dashboard-layout'
+import { formatCurrency, formatDayLabel } from '@/lib/utils'
 
 export default function PlannedMovementsPage() {
   const [plannedMovements, setPlannedMovements] = useState<PlannedMovement[]>([])
@@ -67,21 +68,6 @@ export default function PlannedMovementsPage() {
     } else {
       setError('Failed to delete planned movement')
     }
-  }
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'EUR'
-    }).format(amount)
-  }
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    })
   }
 
   const getAccountName = (accountId: number) => {
@@ -168,7 +154,7 @@ export default function PlannedMovementsPage() {
                         {plannedMovement.recurrence}
                       </span>
                     </TableCell>
-                    <TableCell>{formatDate(plannedMovement.nextExecution)}</TableCell>
+                    <TableCell>{formatDayLabel(plannedMovement.nextExecution)}</TableCell>
                     
                     
                     <TableCell>
