@@ -98,8 +98,7 @@ const SwipeableCards = ({ activeIndex, onIndexChange, sections }: SwipeableCards
     }
 
     return (
-      <div
-        key={section.id}
+      <div key={section.id}
         className="absolute inset-0"
         style={{
           transform: transform,
