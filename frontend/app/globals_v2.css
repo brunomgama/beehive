@@ -13,6 +13,14 @@
   color: var(--text-orange)
 }
 
+.text-ok {
+  color: var(--text-ok)
+}
+
+.text-nok {
+  color: var(--text-nok)
+}
+
 .bg-white {
   background-color: var(--bg-white);
 }
@@ -26,6 +34,14 @@
   opacity: 0.7;
 }
 
+.bg-ok {
+  background-color: var(--bg-ok);
+}
+
+.bg-nok {
+  background-color: var(--bg-nok);
+}
+
 
 
 :root {
@@ -35,10 +51,16 @@
   --text-white: #F9F7F7;
   --text-black: #03071e;
   --text-orange: #e85d04;
+  
+  --text-ok: #C1E59F;
+  --text-nok: #FF937E;
 
   --bg-white: #F9F7F7;
   --bg-black: #03071e;
   --bg-orange: #f48c06;
+
+  --bg-ok: #A3D78A;
+  --bg-nok: #FF5555;
 
 
   --color-fiery-red-sunset-1: #03071E;

@@ -27,7 +27,7 @@ export default function Home() {
     },
     { 
       id: 3, 
-      component: <BankOverview mobileView={isMobile} user={user!} />, 
+      component: <BankOverview/>, 
     },
     { 
       id: 4, 

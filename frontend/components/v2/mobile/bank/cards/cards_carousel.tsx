@@ -4,17 +4,19 @@ import { BankAccount } from "@/lib/api/bank-api";
 import { User } from "@/lib/v2/api/auth/auth-api";
 import { bankAccountApi } from "@/lib/v2/api/banks/accounts-api";
 import { useEffect, useState } from "react";
-import { TrendingUp, TrendingDown, Wallet, Ellipsis, ChartNoAxesCombined } from "lucide-react";
+import { TrendingDown, Wallet, Ellipsis, ChartNoAxesCombined, Plus } from "lucide-react";
 import { formatBalance } from "@/lib/v2/util/converter";
 import { getCardGradient } from "@/lib/v2/util/credit_card";
-import { Button } from "../../ui/button";
-import { useAccount } from "./account_context";
+import { useAccount } from "../context/account_context";
+import { Button } from "@/components/v2/ui/button";
+import { AddMovementDrawer } from "../movements/add_movement";
 
 export function CardsCarousel({user}: {user: User}) {
     const [accounts, setAccounts] = useState<BankAccount[]>([])
     const [loading, setLoading] = useState(true)
     const [activeIndex, setActiveIndex] = useState(0)
     const [touchStart, setTouchStart] = useState<number>(0)
+    const [drawerOpen, setDrawerOpen] = useState(false)
     const { setActiveAccountId } = useAccount()
 
     useEffect(() => {
@@ -61,6 +63,10 @@ export function CardsCarousel({user}: {user: User}) {
         }
     }
 
+    const handleMovementSuccess = () => {
+        fetchUserAccounts()
+    }
+
     if (loading) {
         return (
             <div className="h-48 flex items-center justify-center">
@@ -83,7 +89,6 @@ export function CardsCarousel({user}: {user: User}) {
 
     return (
         <div className="bg-background">
-            {/* Card container with overflow hidden */}
             <div className="px-6 mt-6">
                 <div className="relative h-44 overflow-hidden" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
                     {accounts.map((account, index) => {
@@ -95,9 +100,7 @@ export function CardsCarousel({user}: {user: User}) {
                             <div key={account.id} className="absolute inset-0 transition-all duration-300 ease-out"
                                 style={{
                                     transform: isPrev ? 'translateX(-100%)' : isNext ? 'translateX(100%)' : 'translateX(0)',
-                                    opacity: isActive ? 1 : 0, 
-                                    zIndex: isActive ? 10 : 1, 
-                                    pointerEvents: isActive ? 'auto' : 'none'
+                                    opacity: isActive ? 1 : 0, zIndex: isActive ? 10 : 1, pointerEvents: isActive ? 'auto' : 'none'
                                 }}>
                                 <div className={`w-full h-full bg-gradient-to-br ${getCardGradient(account.type)} 
                                     rounded-2xl shadow-xl p-5 flex flex-col justify-between text-white relative overflow-hidden`}>
@@ -132,7 +135,6 @@ export function CardsCarousel({user}: {user: User}) {
                 </div>
             </div>
 
-            {/* Pagination Dots */}
             <div className="flex justify-center gap-1.5 mt-4">
                 {accounts.map((_, index) => (
                     <button key={index} onClick={() => setActiveIndex(index)}
@@ -143,30 +145,29 @@ export function CardsCarousel({user}: {user: User}) {
                 ))}
             </div>
 
-            {/* Compact Quick Actions */}
             <div className="px-6 mt-5">
                 <div className="grid grid-cols-4 gap-3">
-                    <Button className="flex flex-col items-center justify-center bg-card rounded-xl h-16 p-2 gap-1">
-                        <TrendingUp className="w-5 h-5 text-orange" />
-                        <span className="text-[10px] font-medium text-foreground">Add</span>
+                    <Button onClick={() => setDrawerOpen(true)} 
+                        className="flex flex-col items-center justify-center bg-orange rounded-xl h-10 shadow-xl">
+                        <Plus className="w-5 h-5 text-white" />
                     </Button>
                     
-                    <Button className="flex flex-col items-center justify-center bg-card rounded-xl h-16 p-2 gap-1">
-                        <TrendingDown className="w-5 h-5 text-orange" />
-                        <span className="text-[10px] font-medium text-foreground">Transfer</span>
+                    <Button className="flex flex-col items-center justify-center bg-orange rounded-xl h-10 shadow-xl">
+                        <TrendingDown className="w-5 h-5 text-white" />
                     </Button>
                     
-                    <Button className="flex flex-col items-center justify-center bg-card rounded-xl h-16 p-2 gap-1">
-                        <ChartNoAxesCombined className="w-5 h-5 text-orange" />
-                        <span className="text-[10px] font-medium text-foreground">Analytics</span>
+                    <Button className="flex flex-col items-center justify-center bg-orange rounded-xl h-10 shadow-xl">
+                        <ChartNoAxesCombined className="w-5 h-5 text-white" />
                     </Button>
                     
-                    <Button className="flex flex-col items-center justify-center bg-card rounded-xl h-16 p-2 gap-1">
-                        <Ellipsis className="w-5 h-5 text-orange" />
-                        <span className="text-[10px] font-medium text-foreground">More</span>
+                    <Button className="flex flex-col items-center justify-center bg-orange rounded-xl h-10 shadow-xl">
+                        <Ellipsis className="w-5 h-5 text-white" />
                     </Button>
                 </div>
             </div>
+
+            <AddMovementDrawer open={drawerOpen} onOpenChange={setDrawerOpen} accounts={accounts} 
+                defaultAccountId={accounts[activeIndex]?.id} onSuccess={handleMovementSuccess} />
         </div>
     );
 }
