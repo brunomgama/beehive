@@ -4,8 +4,8 @@ import FloatingNav from "@/components/v2/ui/floating_navbar"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { useState } from "react";
 import { SettingsPage } from "./settings/page";
-import { BankOverview } from "./bank/page";
 import { useAuth } from "@/contexts/auth-context";
+import BankOverview from "./bank/page";
 
 export default function Home() {
   const isMobile = useIsMobile()
