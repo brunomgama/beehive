@@ -11,13 +11,14 @@ import { MovementIcon } from "@/lib/v2/util/movement_icons"
 export function RecentMovements() {
   const [movements, setMovements] = useState<Movement[]>([])
   const [loading, setLoading] = useState(true)
+  const [refreshKey, setRefreshKey] = useState(0)
   const { activeAccountId } = useAccount()
 
   useEffect(() => {
     if (activeAccountId) {
       fetchMovements()
     }
-  }, [activeAccountId])
+  }, [activeAccountId, refreshKey])
 
   const fetchMovements = async () => {
     if (!activeAccountId) return
@@ -26,8 +27,17 @@ export function RecentMovements() {
       setLoading(true)
       const result = await movementApi.getByAccountId(activeAccountId)
       if (result.data) {
+
+        console.log(result.data)
+
         const sortedMovements = result.data
-          .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+          .sort((a, b) => {
+            const dateComparison = new Date(b.date).getTime() - new Date(a.date).getTime()
+            if (dateComparison === 0) {
+              return (b.id || 0) - (a.id || 0)
+            }
+            return dateComparison
+          })
           .slice(0, 5)
         setMovements(sortedMovements)
       }
@@ -37,6 +47,17 @@ export function RecentMovements() {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    (window as any).refreshRecentMovements = () => {
+      console.log('🔄 Manually refreshing movements...')
+      setRefreshKey(prev => prev + 1)
+    }
+    
+    return () => {
+      delete (window as any).refreshRecentMovements
+    }
+  }, [])
 
   if (!activeAccountId) {
     return null

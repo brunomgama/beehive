@@ -21,27 +21,32 @@ export function CardsCarousel({user}: {user: User}) {
 
     useEffect(() => {
         fetchUserAccounts()
-    }, [])
+    }, [user.id])
 
     const fetchUserAccounts = async () => {
         try {
             const result = await bankAccountApi.getByUserId(user.id)
-            if(result.data) {
-                const sortedAccounts = result.data.sort((a, b) => a.priority - b.priority)
+            
+            if(result.data && Array.isArray(result.data)) {
+                const userAccounts = result.data.filter((account: BankAccount) => 
+                    account.userId === user.id
+                )
+                const sortedAccounts = userAccounts.sort((a, b) => a.priority - b.priority)
+                
                 setAccounts(sortedAccounts)
                 if(sortedAccounts.length > 0 && sortedAccounts[0].id) {
                     setActiveAccountId(sortedAccounts[0].id)
                 }
             }
         } catch (error) {
-            console.error('Error fetching accounts:', error);
+            console.error('❌ Error fetching accounts:', error);
         } finally {
             setLoading(false);
         }
     }
 
     useEffect(() => {
-        if(accounts[activeIndex]?.id) {
+        if(accounts.length > 0 && accounts[activeIndex]?.id) {
             setActiveAccountId(accounts[activeIndex].id)
         }
     }, [activeIndex, accounts, setActiveAccountId])
@@ -65,6 +70,15 @@ export function CardsCarousel({user}: {user: User}) {
 
     const handleMovementSuccess = () => {
         fetchUserAccounts()
+        
+        if (typeof (window as any).refreshRecentMovements === 'function') {
+            (window as any).refreshRecentMovements()
+        }
+    }
+
+    const handleOpenDrawer = () => {
+        const currentAccount = accounts[activeIndex]
+        setDrawerOpen(true)
     }
 
     if (loading) {
@@ -97,10 +111,11 @@ export function CardsCarousel({user}: {user: User}) {
                         const isNext = index > activeIndex
 
                         return (
-                            <div key={account.id} className="absolute inset-0 transition-all duration-300 ease-out"
-                                style={{
-                                    transform: isPrev ? 'translateX(-100%)' : isNext ? 'translateX(100%)' : 'translateX(0)',
-                                    opacity: isActive ? 1 : 0, zIndex: isActive ? 10 : 1, pointerEvents: isActive ? 'auto' : 'none'
+                            <div 
+                                key={account.id} 
+                                className="absolute inset-0 transition-all duration-300 ease-out"
+                                style={{transform: isPrev ? 'translateX(-100%)' : isNext ? 'translateX(100%)' : 'translateX(0)', opacity: isActive ? 1 : 0, 
+                                    zIndex: isActive ? 10 : 1, pointerEvents: isActive ? 'auto' : 'none'
                                 }}>
                                 <div className={`w-full h-full bg-gradient-to-br ${getCardGradient(account.type)} 
                                     rounded-2xl shadow-xl p-5 flex flex-col justify-between text-white relative overflow-hidden`}>
@@ -117,7 +132,6 @@ export function CardsCarousel({user}: {user: User}) {
                                     {/* Card Balance */}
                                     <div className="relative z-10">
                                         <h1 className="text-3xl font-bold mb-3">{formatBalance(account.balance)}</h1>
-                                        {/* Card Number (IBAN) */}
                                         <div className="flex items-center justify-between">
                                             <p className="text-xs font-mono tracking-wider">
                                                 {account.iban.slice(0, 4)} •••• {account.iban.slice(-4)}
@@ -147,7 +161,7 @@ export function CardsCarousel({user}: {user: User}) {
 
             <div className="px-6 mt-5">
                 <div className="grid grid-cols-4 gap-3">
-                    <Button onClick={() => setDrawerOpen(true)} 
+                    <Button onClick={handleOpenDrawer}
                         className="flex flex-col items-center justify-center bg-orange rounded-xl h-10 shadow-xl">
                         <Plus className="w-5 h-5 text-white" />
                     </Button>
@@ -167,7 +181,7 @@ export function CardsCarousel({user}: {user: User}) {
             </div>
 
             <AddMovementDrawer open={drawerOpen} onOpenChange={setDrawerOpen} accounts={accounts} 
-                defaultAccountId={accounts[activeIndex]?.id} onSuccess={handleMovementSuccess} />
+                defaultAccountId={accounts[activeIndex]?.id} onSuccess={handleMovementSuccess}/>
         </div>
     );
 }

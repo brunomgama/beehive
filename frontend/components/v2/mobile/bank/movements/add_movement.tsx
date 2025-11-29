@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from "react"
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription } from "@/components/ui/drawer"
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/v2/ui/button"
 import { Input } from "@/components/ui/input"
-import { movementApi, MovementCategory, MovementType, MovementStatus, CreateMovementData } from "@/lib/v2/api/banks/movements-api"
+import { movementApi, MovementCategory, MovementType, MovementStatus } from "@/lib/v2/api/banks/movements-api"
 import { BankAccount } from "@/lib/api/bank-api"
-import { ShoppingCart, Wifi, Laptop, Coffee, Car, Music, Heart, Zap, GraduationCap, Tv, MoreHorizontal, ChevronRight, ChevronDown } from "lucide-react"
+import { ShoppingCart, Wifi, Laptop, Coffee, Car, Music, Heart, Zap, GraduationCap, Tv, MoreHorizontal, ChevronDown } from "lucide-react"
 import { format } from "date-fns"
 import { CurrencyInput } from "@/lib/v2/util/currency-input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/v2/ui/select"
@@ -20,18 +20,20 @@ interface AddMovementDrawerProps {
 }
 
 export function AddMovementDrawer({ open, onOpenChange, accounts, defaultAccountId, onSuccess }: AddMovementDrawerProps) {
-  const [accountId, setAccountId] = useState<number | null>(defaultAccountId || null)
+  const [accountId, setAccountId] = useState<number>(defaultAccountId || 0)
   const [category, setCategory] = useState<MovementCategory>('OTHER')
   const [type, setType] = useState<MovementType>('EXPENSE')
-  const [amount, setAmount] = useState('')
+  const [amount, setAmount] = useState<number>(0)
   const [description, setDescription] = useState('')
   const [date, setDate] = useState(format(new Date(), 'yyyy-MM-dd'))
   const [status, setStatus] = useState<MovementStatus>('CONFIRMED')
   const [loading, setLoading] = useState(false)
   const [showCategoryDrawer, setShowCategoryDrawer] = useState(false)
 
+  // Update accountId when defaultAccountId changes
   useEffect(() => {
     if (defaultAccountId) {
+      console.log('Setting accountId to:', defaultAccountId)
       setAccountId(defaultAccountId)
     }
   }, [defaultAccountId])
@@ -55,33 +57,67 @@ export function AddMovementDrawer({ open, onOpenChange, accounts, defaultAccount
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!accountId || !amount || !description) {
+    console.log('=== SUBMIT ATTEMPT ===')
+    console.log('accountId:', accountId)
+    console.log('amount:', amount)
+    console.log('description:', description)
+    console.log('type:', type)
+    console.log('category:', category)
+    
+    if (!accountId || accountId === 0 || !amount || !description) {
+      console.log('❌ Validation failed!')
       return
     }
 
+    console.log('✅ Validation passed, making API call...')
     setLoading(true)
+    
     try {
-      const movementData: CreateMovementData = {
-        accountId, category, type,
-        amount: type === 'EXPENSE' ? -Math.abs(parseFloat(amount)) : Math.abs(parseFloat(amount)),
-        description, date, status
+      // Create movement data exactly like the old working version
+      const movementData = {
+        accountId: accountId,
+        category: category,
+        type: type,
+        amount: amount,
+        description: description,
+        date: date,
+        status: status
       }
 
-      await movementApi.create(movementData)
+      console.log('📤 Sending movement data:', movementData)
       
-      setAmount('')
-      setDescription('')
-      setDate(format(new Date(), 'yyyy-MM-dd'))
-      setCategory('OTHER')
-      setStatus('CONFIRMED')
+      const result = await movementApi.create(movementData)
       
-      onSuccess?.()
-      onOpenChange(false)
+      console.log('📥 API response:', result)
+      
+      if (result.data) {
+        console.log('✅ Movement created successfully!')
+        
+        // Reset form
+        setAmount(0)
+        setDescription('')
+        setDate(format(new Date(), 'yyyy-MM-dd'))
+        setCategory('OTHER')
+        setStatus('CONFIRMED')
+        
+        // Call success callback and close drawer
+        onSuccess?.()
+        onOpenChange(false)
+      } else {
+        console.error('❌ API returned error:', result.error)
+        alert('Failed to create movement: ' + result.error)
+      }
     } catch (error) {
-      console.error('Error creating movement:', error)
+      console.error('❌ Error creating movement:', error)
+      alert('An error occurred while creating the movement')
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleAmountChange = (value: string) => {
+    const numValue = parseFloat(value) || 0
+    setAmount(numValue)
   }
 
   return (
@@ -108,20 +144,36 @@ export function AddMovementDrawer({ open, onOpenChange, accounts, defaultAccount
               </Button>
             </div>
 
-            {/* Description - Borderless */}
+            {/* Description */}
             <div className="text-center mb-4">
-              <Input value={description} onChange={(e) => setDescription(e.target.value)}
-                placeholder="Description" className="text-center text-lg border-0 shadow-none focus-visible:ring-0 px-0" />
+              <Input 
+                value={description} 
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Description" 
+                className="text-center text-lg border-0 shadow-none focus-visible:ring-0 px-0" 
+              />
             </div>
 
-            {/* Amount - Large Centered with € prefix */}
+            {/* Amount */}
             <div className="mb-6">
-              <CurrencyInput value={amount} onChange={setAmount} placeholder="0.00" className="text-5xl font-bold"/>
+              <CurrencyInput 
+                value={amount.toString()} 
+                onChange={handleAmountChange} 
+                placeholder="0.00" 
+                className="text-5xl font-bold"
+              />
             </div>
 
-            {/* Account Selector - Centered */}
+            {/* Account Selector */}
             <div className="mb-8 flex justify-center">
-              <Select value={accountId?.toString()} onValueChange={(value) => setAccountId(parseInt(value))}>
+              <Select 
+                value={accountId.toString()} 
+                onValueChange={(value) => {
+                  const id = parseInt(value)
+                  console.log('Account selected:', id)
+                  setAccountId(id)
+                }}
+              >
                 <SelectTrigger className="border-0 shadow-none focus:ring-0 text-center justify-center text-base w-auto">
                   <SelectValue placeholder="Select account" />
                 </SelectTrigger>
@@ -136,8 +188,12 @@ export function AddMovementDrawer({ open, onOpenChange, accounts, defaultAccount
             </div>
 
             {/* Category Button */}
-            <Button type="button" variant="ghost" onClick={() => setShowCategoryDrawer(true)}
-              className="w-full mb-4 h-10 justify-between text-base shadow-sm" >
+            <Button 
+              type="button" 
+              variant="ghost" 
+              onClick={() => setShowCategoryDrawer(true)}
+              className="w-full mb-4 h-10 justify-between text-base shadow-sm"
+            >
               <div className="flex items-center gap-3">
                 {selectedCategory?.icon}
                 <span>{selectedCategory?.label}</span>
@@ -145,9 +201,14 @@ export function AddMovementDrawer({ open, onOpenChange, accounts, defaultAccount
               <ChevronDown className="w-5 h-5 text-muted-foreground" />
             </Button>
 
-            {/* Date & Status - Inline, half width each */}
+            {/* Date & Status */}
             <div className="grid grid-cols-2 gap-3 mb-6 opacity-50">
-              <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="text-sm" />
+              <Input 
+                type="date" 
+                value={date} 
+                onChange={(e) => setDate(e.target.value)} 
+                className="text-sm" 
+              />
               <div>
                 <Select value={status} onValueChange={(value) => setStatus(value as MovementStatus)}>
                   <SelectTrigger className="text-sm w-full">
@@ -164,8 +225,11 @@ export function AddMovementDrawer({ open, onOpenChange, accounts, defaultAccount
             </div>
 
             {/* Submit Button */}
-            <Button type="submit" className="w-full h-12 bg-orange text-white text-base font-semibold rounded-xl"
-              disabled={loading || !accountId || !amount || !description}>
+            <Button 
+              type="submit" 
+              className="w-full h-12 bg-orange text-white text-base font-semibold rounded-xl"
+              disabled={loading || !accountId || !amount || !description}
+            >
               {loading ? 'Creating...' : 'Create Movement'}
             </Button>
           </form>
@@ -183,20 +247,25 @@ export function AddMovementDrawer({ open, onOpenChange, accounts, defaultAccount
           <div className="px-4 pb-8">
             <div className="grid grid-cols-2 gap-3">
               {categories.map((cat) => (
-                <Button key={cat.value} type="button"
-                    onClick={() => { 
-                        setCategory(cat.value) 
-                        setShowCategoryDrawer(false) 
-                    }}
-                    className={`flex flex-col items-center gap-3 p-4 rounded-2xl transition-all h-20 ${
-                        category === cat.value ? 'bg-orange' : 'bg-card'
-                    }`} >
-                    <div className={`${category === cat.value ? 'text-white' : 'text-muted-foreground'}`}>
-                        {cat.icon}
-                    </div>
-                    <span className={`${category === cat.value ? 'text-sm text-white text-center' : 'text-sm text-black text-center'}`}>
-                        {cat.label}
-                    </span>
+                <Button 
+                  key={cat.value} 
+                  type="button"
+                  onClick={() => { 
+                    setCategory(cat.value) 
+                    setShowCategoryDrawer(false) 
+                  }}
+                  className={`flex flex-col items-center gap-3 p-4 rounded-2xl transition-all h-20 ${
+                    category === cat.value ? 'bg-orange' : 'bg-card'
+                  }`}
+                >
+                  <div className={`${category === cat.value ? 'text-white' : 'text-muted-foreground'}`}>
+                    {cat.icon}
+                  </div>
+                  <span className={`text-sm text-center ${
+                    category === cat.value ? 'text-white' : 'text-black'
+                  }`}>
+                    {cat.label}
+                  </span>
                 </Button>
               ))}
             </div>
