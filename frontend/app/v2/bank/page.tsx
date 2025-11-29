@@ -1,3 +1,5 @@
+'use client'
+
 import BankOverviewMobilePage from "@/components/v2/mobile/bank/bank_overview_mobile";
 import { useAuth } from "@/contexts/auth-context";
 import { useIsMobile } from "@/hooks/use-mobile";
