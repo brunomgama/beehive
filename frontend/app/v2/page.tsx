@@ -1,7 +1,6 @@
 'use client'
 
 import FloatingNav from "@/components/v2/ui/floating_navbar"
-import SwipeableCards from "@/components/v2/ui/swipe_cards";
 import { useIsMobile } from "@/hooks/use-mobile"
 import { useState } from "react";
 import { SettingsPage } from "./settings/page";
@@ -39,8 +38,10 @@ export default function Home() {
   return (
     <>
       {isMobile ? 
-        <div className="h-screen w-full bg-gray-50 overflow-hidden">
-          <SwipeableCards activeIndex={activeIndex} onIndexChange={setActiveIndex} sections={sections}/>
+        <div className="h-screen w-full bg-background overflow-hidden">
+          <div className="h-full w-full">
+            {sections[activeIndex].component}
+          </div>
           <FloatingNav active={activeIndex} onActiveChange={setActiveIndex} />
         </div>
       :
