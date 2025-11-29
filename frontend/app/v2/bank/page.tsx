@@ -3,16 +3,16 @@ import { useAuth } from "@/contexts/auth-context";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function BankOverview() {
-    const isMobile = useIsMobile()
-    const { user } = useAuth()
+  const isMobile = useIsMobile()
+  const { user } = useAuth()
 
-    return (
-      <div>
-        {isMobile ? 
-          <BankOverviewMobilePage user={user!}/>
-          : 
-          "Desktop Settings"
-        }
-      </div>
-    );
+  return (
+    <div>
+      {isMobile ? 
+        <BankOverviewMobilePage user={user!}/>
+        : 
+        "Desktop Settings"
+      }
+    </div>
+  );
 }

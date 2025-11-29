@@ -3,27 +3,25 @@
 import FloatingNav from "@/components/v2/ui/floating_navbar"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { useState } from "react";
-import { SettingsPage } from "./settings/page";
-import { useAuth } from "@/contexts/auth-context";
+import SettingsPage from "./settings/page";
 import BankOverview from "./bank/page";
 
 export default function Home() {
   const isMobile = useIsMobile()
   const [activeIndex, setActiveIndex] = useState(2);
-  const { user } = useAuth()
 
   const sections = [
     { 
       id: 0, 
-      component: <SettingsPage mobileView={isMobile}/>, 
+      component: <SettingsPage />, 
     },
     { 
       id: 1, 
-      component: <SettingsPage mobileView={isMobile}/>, 
+      component: <SettingsPage />, 
     },
     { 
       id: 2, 
-      component: <SettingsPage mobileView={isMobile}/>, 
+      component: <SettingsPage />, 
     },
     { 
       id: 3, 
@@ -31,7 +29,7 @@ export default function Home() {
     },
     { 
       id: 4, 
-      component: <SettingsPage mobileView={isMobile}/>, 
+      component: <SettingsPage />, 
     }
   ];
 
