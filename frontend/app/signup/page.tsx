@@ -3,9 +3,9 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '../../contexts/auth-context'
-import { authApi } from '@/lib/api/auth-api'
-import { Signup as SignupMobile } from '@/components/mobile/signup/signup'
-import { Signup as SignupDesktop } from '@/components/desktop/signup/signup'
+import { authApi } from '@/lib/api/auth/auth-api'
+import { SignupMobile } from '@/components/mobile/signup/signup'
+import { SignupDesktop } from '@/components/desktop/signup/signup'
 import { useIsMobile } from '@/hooks/use-mobile'
 
 export default function Signup() {
@@ -15,6 +15,7 @@ export default function Signup() {
     username: '',
     email: '',
     password: '',
+    confirmPassword: '',
     firstName: '',
     lastName: '',
   })
@@ -23,6 +24,7 @@ export default function Signup() {
   const [showPassword, setShowPassword] = useState(false)
   
   const { login } = useAuth()
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const router = useRouter()
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -71,8 +73,10 @@ export default function Signup() {
             handleChange={handleChange}
             error={error}
             isLoading={isLoading}
-            showPassword={showPassword}
-            setShowPassword={setShowPassword}/>
+            setShowPassword={setShowPassword}
+            showConfirmPassword={showConfirmPassword}
+            setShowConfirmPassword={setShowConfirmPassword}
+            showPassword={showPassword}/>
           ) : (
           <SignupDesktop 
             handleSubmit={handleSubmit}

@@ -14,7 +14,7 @@ interface LoginProps {
     setShowPassword: (value: boolean | ((prev: boolean) => boolean)) => void
   }
 
-export function Login({ handleSubmit, formData, handleChange, error, 
+export function LoginDesktop({ handleSubmit, formData, handleChange, error, 
     isLoading, showPassword, setShowPassword }: LoginProps) {
     return (
         <div className="min-h-screen flex flex-col md:flex-row bg-gray-950">
@@ -32,17 +32,14 @@ export function Login({ handleSubmit, formData, handleChange, error,
                         <div className="space-y-6">
                             <div>
                                 <Label htmlFor="username" className='text-gray-100 font-[var(--font-inter)] mb-1 text-lg'>Username</Label>
-                                <Input id="username" name="username" type="text" required
-                                    value={formData.username} onChange={handleChange}
+                                <Input id="username" name="username" type="text" required value={formData.username} onChange={handleChange}
                                     placeholder="Enter your username" className="mt-2 text-gray-100 h-14 rounded-xl text-lg px-4"/>
                             </div>
                             <div className="relative">
                                 <Label htmlFor="password" className='text-gray-100 font-[var(--font-inter)] mb-1 text-lg'>Password</Label>
-                                <Input id="password" name="password"
-                                    type={showPassword ? "text" : "password"} required value={formData.password}
+                                <Input id="password" name="password" type={showPassword ? "text" : "password"} required value={formData.password}
                                     onChange={handleChange} placeholder="Enter your password"
-                                    className="mt-2 text-gray-100 h-14 rounded-xl text-lg px-4 pr-12"
-                                />
+                                    className="mt-2 text-gray-100 h-14 rounded-xl text-lg px-4 pr-12"/>
                                 
                                 <button type="button" className="absolute right-4 bottom-4 text-gray-400"
                                     onClick={() => setShowPassword((v) => !v)} tabIndex={-1} >
@@ -74,10 +71,8 @@ export function Login({ handleSubmit, formData, handleChange, error,
             </div>
         </div>
         {/* Right: Background Image (hidden on mobile) */}
-        <div
-            className="hidden md:block md:w-1/2 h-[calc(100vh-1rem)] m-2 rounded-3xl"
-            style={{ backgroundImage: "url('/LoginWallpaperIII.jpg')", backgroundSize: 'cover', backgroundPosition: 'center' }}
-        />
+        <div className="hidden md:block md:w-1/2 h-[calc(100vh-1rem)] m-2 rounded-3xl" 
+            style={{ backgroundImage: "url('/LoginWallpaperIII.jpg')", backgroundSize: 'cover', backgroundPosition: 'center' }}/>
         </div>
     )
 }

@@ -20,7 +20,7 @@ interface SignupProps {
     setShowPassword: (value: boolean | ((prev: boolean) => boolean)) => void
 }
 
-export function Signup({handleSubmit, formData, handleChange, error, 
+export function SignupDesktop({handleSubmit, formData, handleChange, error, 
     isLoading, showPassword, setShowPassword }: SignupProps) {
 
     return (

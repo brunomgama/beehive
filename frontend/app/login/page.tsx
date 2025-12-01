@@ -3,10 +3,10 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '../../contexts/auth-context'
-import { authApi } from '@/lib/api/auth-api'
+import { authApi } from '@/lib/api/auth/auth-api'
 import { useIsMobile } from '@/hooks/use-mobile'
-import { Login as LoginDesktop } from '../../components/desktop/login/login'
-import { Login as LoginMobile } from '../../components/mobile/login/login'
+import { LoginDesktop } from '../../components/desktop/login/login'
+import { LoginMobile } from '../../components/mobile/login/login'
 
 export default function Login() {
   const isMobile = useIsMobile()
@@ -50,23 +50,11 @@ export default function Login() {
   return (
     <>
     { isMobile ? (
-      <LoginMobile
-        handleSubmit={handleSubmit}
-        formData={formData}
-        handleChange={handleChange}
-        error={error}
-        isLoading={isLoading}
-        showPassword={showPassword}
-        setShowPassword={setShowPassword}/>
+      <LoginMobile handleSubmit={handleSubmit} formData={formData} handleChange={handleChange} 
+      error={error} isLoading={isLoading} showPassword={showPassword} setShowPassword={setShowPassword}/>
       ) : (
-      <LoginDesktop 
-        handleSubmit={handleSubmit}
-        formData={formData}
-        handleChange={handleChange}
-        error={error}
-        isLoading={isLoading}
-        showPassword={showPassword}
-        setShowPassword={setShowPassword}/>
+      <LoginDesktop  handleSubmit={handleSubmit} formData={formData} handleChange={handleChange} 
+      error={error} isLoading={isLoading} showPassword={showPassword} setShowPassword={setShowPassword}/>
     )}
     </>
   )

@@ -1,93 +1,171 @@
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Eye, EyeOff } from "lucide-react";
+'use client'
+
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Eye, EyeOff, ArrowRight } from "lucide-react"
 import Link from 'next/link'
+import { useState, useEffect } from 'react'
 
 interface LoginProps {
-    handleSubmit: (e: React.FormEvent) => Promise<void>
-    formData: { username: string; password: string }
-    handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void
-    error: string
-    isLoading: boolean
-    showPassword: boolean
-    setShowPassword: (value: boolean | ((prev: boolean) => boolean)) => void
-  }
+  handleSubmit: (e: React.FormEvent) => Promise<void>
+  formData: { username: string; password: string }
+  handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+  error: string
+  isLoading: boolean
+  showPassword: boolean
+  setShowPassword: (value: boolean | ((prev: boolean) => boolean)) => void
+}
 
-export function Login({ handleSubmit, formData, handleChange, error, 
-    isLoading, showPassword, setShowPassword }: LoginProps) {
-    return (
-        <div className="min-h-screen flex flex-col bg-gray-950">
-            <div className="flex-1 flex items-center justify-center px-4 py-8 sm:px-6 lg:px-8">
-                <div className="w-full max-w-sm sm:max-w-md space-y-6">
-                    <div className="text-left">
-                        <h2 className="text-5xl sm:text-4xl lg:text-6xl font-thin text-gray-100 font-[var(--font-inter)] mb-2">
-                            Welcome
-                        </h2>
-                        <p className="text-base sm:text-lg text-gray-100 text-left">
-                            Access your account and continue your journey
-                        </p>
-                    </div>
-                    
-                    <form className="space-y-6" onSubmit={handleSubmit}>
-                        <div className="space-y-4">
-                            <div>
-                                <Label htmlFor="username" className='block text-gray-100 font-[var(--font-inter)] mb-2 text-base sm:text-lg'>
-                                    Username
-                                </Label>
-                                <Input id="username" name="username" type="text" 
-                                    required value={formData.username} onChange={handleChange}
-                                    placeholder="Enter your username" className="w-full text-gray-100 h-12 sm:h-14 rounded-xl text-base sm:text-lg px-4"/>
-                            </div>
-                            <div className="relative">
-                                <Label htmlFor="password" className='block text-gray-100 font-[var(--font-inter)] mb-2 text-base sm:text-lg'>
-                                    Password
-                                </Label>
-                                <Input id="password" name="password"type={showPassword ? "text" : "password"} required value={formData.password}
-                                 onChange={handleChange}  placeholder="Enter your password" className="w-full text-gray-100 h-12 sm:h-14 rounded-xl text-base sm:text-lg px-4 pr-12"/>
-                                <Button type="button" variant={"ghost"}
-                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 mt-4 text-gray-400 hover:text-gray-300 transition-colors"
-                                    onClick={() => setShowPassword((v) => !v)} tabIndex={-1}
-                                    aria-label={showPassword ? "Hide password" : "Show password"}>
-                                    {showPassword ? 
-                                        <EyeOff size={20} /> : 
-                                        <Eye size={20} />}
-                                </Button>
-                            </div>
-                        </div>
-                        
-                        <hr className="border-gray-700" />
+export function LoginMobile({ handleSubmit, formData, handleChange, error, isLoading, showPassword, setShowPassword }: LoginProps) {
+  const [mounted, setMounted] = useState(false)
 
-                        {error && (
-                            <div className="text-red-400 text-base sm:text-lg text-center bg-red-950/30 border border-red-800 rounded-lg p-3">
-                                {error}
-                            </div>
-                        )}
-                        
-                        <div className="space-y-4">
-                            <Button type="submit" disabled={isLoading} 
-                                className="w-full bg-purple-900 text-gray-100 hover:text-gray-900 hover:bg-purple-100 
-                                disabled:bg-purple-900/50 disabled:text-gray-400 rounded-xl h-12 sm:h-14 text-base sm:text-lg 
-                                font-medium transition-all duration-200">
-                                {isLoading ? 'Signing in...' : 'Sign in'}
-                            </Button>
-                            
-                            <p className="text-base sm:text-lg text-gray-100 text-center">
-                                New to the platform?{' '}
-                                <Link  href="/signup" 
-                                    className="font-medium text-purple-400 hover:text-purple-300 transition-colors" >
-                                    Create a new account
-                                </Link>
-                            </p>
-                        </div>
-                    </form>
-                </div>
-            </div>
+  useEffect(() => {
+    setMounted(true)
+    
+    // Prevent scrolling
+    document.body.style.overflow = 'hidden'
+    document.body.style.position = 'fixed'
+    document.body.style.width = '100%'
+    document.body.style.height = '100%'
+    
+    return () => {
+      document.body.style.overflow = ''
+      document.body.style.position = ''
+      document.body.style.width = ''
+      document.body.style.height = ''
+    }
+  }, [])
 
-            {/* <div className="hidden lg:block fixed right-0 top-0 w-1/2 h-screen"
-                style={{ 
-                    backgroundImage: "url('/LoginWallpaperIII.jpg')", backgroundSize: 'cover', 
-                    backgroundPosition: 'center', zIndex: -1 }}/> */}
+  if (!mounted) return null
+
+  return (
+    <div className="h-screen w-screen flex flex-col relative overflow-hidden bg-[#2A2A2A] fixed inset-0">
+      
+      {/* Top Section - Character Display */}
+      <div className="flex-1 flex items-center justify-center bg-gradient-to-b from-[#FFE5D9] to-[#FFD5C8] relative overflow-hidden rounded-b-[2rem]">
+        
+        {/* Soft background elements */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute top-10 left-10 w-64 h-64 bg-orange-200/30 rounded-full blur-3xl" />
+          <div className="absolute bottom-10 right-10 w-80 h-80 bg-orange-300/20 rounded-full blur-3xl" />
         </div>
-    )
+        
+        {/* Video Container - Circular like the reference */}
+        <div className="relative z-10 flex items-center justify-center p-8">
+          <div className="relative">
+            {/* Circular container for video */}
+            <div className="w-[15rem] h-[15rem] rounded-full overflow-hidden bg-white/50 backdrop-blur-sm shadow-2xl shadow-black/10 flex items-center justify-center">
+              <video autoPlay loop muted playsInline className="w-full h-full object-cover scale-110">
+                <source src="/videos/choose_character.mp4" type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
+            </div>
+            
+            {/* Decorative curl/line on top (like the reference) */}
+            <div className="absolute -top-8 left-1/2 -translate-x-1/2">
+              <svg width="60" height="40" viewBox="0 0 60 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M 5 35 Q 10 5 30 10 Q 50 15 55 5" stroke="#2A2A2A" strokeWidth="3" 
+                strokeLinecap="round" fill="none" className="animate-draw-line"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom Section - Login Form */}
+      <div className="flex-1 bg-[#2A2A2A] px-6 py-8 flex flex-col overflow-hidden">
+        
+        {/* Welcome Text */}
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-white mb-2">
+            Welcome to BeeHive
+          </h1>
+        </div>
+
+        {/* Login Form */}
+        <form onSubmit={handleSubmit} className="space-y-5 max-w-md mx-auto w-full">
+          
+          {/* Username Field */}
+          <div className="space-y-2">
+            <Label htmlFor="username" className="text-sm font-semibold text-gray-300">
+              Username
+            </Label>
+            <Input id="username" name="username" type="text" required value={formData.username} onChange={handleChange}
+              placeholder="Enter your username" className="h-14 bg-white/10 border-2 border-white/20 text-white 
+              placeholder:text-gray-500 rounded-2xl focus:border-[#FFB380] focus:ring-4 focus:ring-[#FFB380]/20 
+              transition-all font-medium backdrop-blur-sm"/>
+          </div>
+
+          {/* Password Field */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="password" className="text-sm font-semibold text-gray-300">
+                Password
+              </Label>
+              <Link href="/forgot-password" className="text-sm text-[#FFB380] hover:text-[#FFC99E] font-medium transition-colors">
+                Forgot?
+              </Link>
+            </div>
+            <div className="relative">
+              <Input id="password" name="password" type={showPassword ? "text" : "password"} required value={formData.password}
+                onChange={handleChange} placeholder="Enter your password"
+                className="h-14 bg-white/10 border-2 border-white/20 text-white placeholder:text-gray-500 rounded-2xl pr-14
+                 focus:border-[#FFB380] focus:ring-4 focus:ring-[#FFB380]/20 transition-all font-medium backdrop-blur-sm"/>
+              <button type="button" className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#FFB380] transition-colors p-1"
+                onClick={() => setShowPassword((v) => !v)} tabIndex={-1}>
+                {showPassword ? <EyeOff size={22} /> : <Eye size={22} />}
+              </button>
+            </div>
+          </div>
+
+          {/* Error Message */}
+          {error && (
+            <div className="bg-red-500/10 border-2 border-red-500/30 text-red-400 rounded-2xl p-4 text-sm font-medium animate-slide-down backdrop-blur-sm">
+              {error}
+            </div>
+          )}
+
+          {/* Action Buttons - Like the reference (Skip/Next style) */}
+          <div className="flex items-center gap-4 pt-4">
+            <Link href="/signup" className="text-gray-400 hover:text-white font-medium transition-colors text-base">
+              Sign up
+            </Link>
+            
+            <Button type="submit" disabled={isLoading} 
+              className="flex-1 h-14 bg-gradient-to-r from-[#FFB380] to-[#FFC99E] hover:from-[#FFC99E] 
+              hover:to-[#FFB380] text-gray-900 font-bold text-base rounded-full shadow-lg shadow-[#FFB380]/30
+               hover:shadow-[#FFB380]/50 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 group 
+               relative overflow-hidden">
+              {/* Button shine effect */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+              
+              {isLoading ? (
+                <span className="flex items-center gap-3 relative z-10">
+                  <div className="w-5 h-5 border-3 border-gray-900/30 border-t-gray-900 rounded-full animate-spin" />
+                  Signing in...
+                </span>
+              ) : (
+                <span className="flex items-center gap-2 relative z-10">
+                  Sign in
+                  <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+                </span>
+              )}
+            </Button>
+          </div>
+        </form>
+
+        {/* Bottom spacing */}
+        <div className="flex-1" />
+        
+        {/* Trust Badge */}
+        <div className="text-center pt-6 pb-4">
+          <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
+            <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse shadow-lg shadow-green-400/50" />
+            Secure & Encrypted
+          </div>
+        </div>
+      </div>
+    </div>
+  )
 }

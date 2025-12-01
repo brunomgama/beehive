@@ -3,7 +3,7 @@
 import { useAuth } from '../contexts/auth-context'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
-import { LoadingPage } from './mobile/loading/loading-page'
+import LoadingPage from './mobile/loading/loading'
 
 interface ProtectedRouteProps {
   children: React.ReactNode
@@ -20,7 +20,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   }, [user, isLoading, router])
 
   if (isLoading) {
-    return (<LoadingPage title="Accounts listing..." loadingText="Processing • Please wait • Processing • " />)
+    return (<LoadingPage />)
   }
 
   if (!user) {

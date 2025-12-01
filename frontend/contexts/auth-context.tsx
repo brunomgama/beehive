@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation"
 import React, { createContext, useContext, useState, useEffect } from 'react'
-import { authApi, User } from '../lib/api/auth-api'
+import { authApi, User } from '../lib/api/auth/auth-api'
 
 interface AuthContextType {
   user: User | null
