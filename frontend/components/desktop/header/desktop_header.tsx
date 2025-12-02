@@ -1,6 +1,6 @@
 'use client'
 
-import { Settings, FileText, Home, Wallet, BarChart3 } from "lucide-react"
+import { Settings, FileText, Home, Wallet, BarChart3, ArrowLeftRight, CalendarClock } from "lucide-react"
 import { useTheme } from "@/contexts/theme-context"
 import { useAuth } from "@/contexts/auth-context"
 import { getThemeColors } from "@/lib/themes"
@@ -19,6 +19,8 @@ export default function DesktopHeader({ activeIndex, onActiveChange }: DesktopHe
   const navItems = [
     { id: 2, label: "Dashboard", icon: Home },
     { id: 3, label: "Accounts", icon: Wallet },
+    { id: 5, label: "Movements", icon: ArrowLeftRight },
+    { id: 6, label: "Planned", icon: CalendarClock },
     { id: 4, label: "Analytics", icon: BarChart3 },
     { id: 1, label: "Notes", icon: FileText },
     { id: 0, label: "Settings", icon: Settings },

@@ -8,12 +8,15 @@ import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from "@/components/ui/dropdown-menu"
 import { formatBalance } from "@/lib/util/converter"
 import { BankAccount, bankAccountApi } from "@/lib/api/bank/accounts-api"
+import { getButtonStyle } from "@/lib/themes"
+import { useTheme } from "@/contexts/theme-context"
 
 export default function AccountsDesktop() {
   const { user } = useAuth()
   const [accounts, setAccounts] = useState<BankAccount[]>([])
   const [loading, setLoading] = useState(true)
   const [hoveredCard, setHoveredCard] = useState<number | null>(null)
+  const { setTheme, theme } = useTheme()
 
   useEffect(() => {
     fetchAccounts()
@@ -59,7 +62,7 @@ export default function AccountsDesktop() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-muted/30 to-background p-8">
-        <div className="max-w-[1600px] mx-auto space-y-6">
+        <div className="mx-auto space-y-6">
           <div className="h-10 bg-muted rounded w-1/4 animate-pulse"></div>
           <div className="grid grid-cols-4 gap-6">
             {[1, 2, 3, 4].map((i) => (
@@ -73,7 +76,7 @@ export default function AccountsDesktop() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-muted/30 to-background p-8">
-      <div className="max-w-[1600px] mx-auto space-y-6">
+      <div className="mx-auto space-y-6">
         
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
@@ -85,9 +88,8 @@ export default function AccountsDesktop() {
           </div>
           
           {/* Add Account Button */}
-          <Button onClick={handleCreate} className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-gradient-to-r from-amber-400 to-orange-500 
-            hover:from-amber-500 hover:to-orange-600 text-white font-semibold shadow-lg hover:shadow-xl transition-all">
-            <Plus size={20} />
+          <Button onClick={handleCreate} className={`h-14 ${getButtonStyle(theme)} font-bold text-base rounded-full shadow-lg
+            hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 group relative overflow-hidden`}>
             Add Account
           </Button>
         </div>
@@ -98,103 +100,93 @@ export default function AccountsDesktop() {
             <div key={account.id} className="group relative" onMouseEnter={() => setHoveredCard(account.id || null)} 
             onMouseLeave={() => setHoveredCard(null)}>
               {/* Account Card - Glass Effect */}
-              <div className="relative rounded-3xl overflow-hidden backdrop-blur-2xl border border-white/20 shadow-xl transition-all duration-300 hover:shadow-2xl hover:scale-[1.02]">
-                
-                {/* Card Gradient Background */}
-                <div className={`absolute inset-0 bg-gradient-to-br ${getCardGradient(account.type)} opacity-40`}></div>
-                
-                {/* Decorative Elements */}
-                <div className="absolute -top-12 -right-12 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
-                <div className="absolute -bottom-8 -left-8 w-32 h-32 bg-white/10 rounded-full blur-3xl"></div>
-
-                {/* Card Content */}
-                <div className="relative z-10 p-6">
+              <div className="mt-4 relative rounded-2xl p-4 backdrop-blur-xl border bg-white/30 transition-all duration-300">
+                <div className="relative rounded-3xl overflow-hidden backdrop-blur-2xl shadow-xl transition-all duration-300 hover:shadow-2xl hover:scale-[1.02]">
                   
-                  {/* Card Header */}
-                  <div className="flex items-start justify-between mb-6">
-                    <div>
-                      <p className="text-xs text-white/70 font-medium mb-1 drop-shadow">Account</p>
-                      <h3 className="text-lg font-bold text-white drop-shadow-lg">
-                        {account.accountName}
-                      </h3>
-                    </div>
+                  {/* Card Gradient Background */}
+                  <div className={`absolute inset-0 bg-gradient-to-br ${getCardGradient(account.type)} opacity-40`}></div>
+                  
+                  {/* Decorative Elements */}
+                  <div className="absolute -top-12 -right-12 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
+                  <div className="absolute -bottom-8 -left-8 w-32 h-32 bg-white/10 rounded-full blur-3xl"></div>
+
+                  {/* Card Content */}
+                  <div className="relative z-10 p-6">
                     
-                    {/* Actions Menu */}
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <button className="w-8 h-8 rounded-full bg-white/15 backdrop-blur-md hover:bg-white/25 transition-all flex items-center justify-center border border-white/20">
-                          <MoreVertical size={16} className="text-white" />
-                        </button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-48">
-                        <DropdownMenuItem onClick={() => handleEdit(account.id!)}>
-                          <Edit2 size={16} className="mr-2" />
-                          Edit Account
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleDelete(account.id!)} className="text-destructive focus:text-destructive">
-                          <Trash2 size={16} className="mr-2" />
-                          Delete Account
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    {/* Card Header */}
+                    <div className="flex items-start justify-between mb-6">
+                      <div>
+                        <p className="text-xs font-medium mb-1">Account</p>
+                        <h3 className="text-lg font-bold">
+                          {account.accountName}
+                        </h3>
+                      </div>
+                      
+                      {/* Actions Menu */}
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button className="w-8 h-8 rounded-full bg-white/15 backdrop-blur-md hover:bg-white/25 transition-all 
+                          flex items-center justify-center">
+                            <MoreVertical size={16}/>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-48">
+                          <DropdownMenuItem onClick={() => handleEdit(account.id!)}>
+                            <Edit2 size={16} className="mr-2" />
+                            Edit Account
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleDelete(account.id!)} className="text-destructive focus:text-destructive">
+                            <Trash2 size={16} className="mr-2" />
+                            Delete Account
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+
+                    {/* Balance */}
+                    <div className="mb-6">
+                      <p className="text-sm mb-1">Current Balance</p>
+                      <h2 className="text-4xl font-bold">
+                        {formatBalance(account.balance)}
+                      </h2>
+                    </div>
+
+                    {/* IBAN */}
+                    <div className="mb-4">
+                      <p className="text-sm font-mono tracking-wider">
+                        {account.iban.slice(0, 4)} •••• •••• •••• •• • • {account.iban.slice(-4)}
+                      </p>
+                    </div>
+
+                    {/* Account Type Badge */}
+                    <div className="inline-flex px-3 py-1 rounded-full bg-white/15 backdrop-blur-md border border-white/20">
+                      <span className="text-xs font-semibold">
+                        {account.type}
+                      </span>
+                    </div>
+                    <div className="inline-flex px-3 py-1 rounded-full bg-white/15 backdrop-blur-md border border-white/20">
+                      <span className="text-xs font-semibold">
+                        {account.balance >= 0 ? 'Active' : 'Overdrawn'}
+                      </span>
+                    </div>
                   </div>
 
-                  {/* Balance */}
-                  <div className="mb-6">
-                    <p className="text-sm text-white/70 mb-1 drop-shadow">Current Balance</p>
-                    <h2 className="text-4xl font-bold text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.3)]">
-                      {formatBalance(account.balance)}
-                    </h2>
-                  </div>
-
-                  {/* IBAN */}
-                  <div className="mb-4">
-                    <p className="text-sm font-mono text-white/80 drop-shadow tracking-wider">
-                      {account.iban.slice(0, 4)} •••• {account.iban.slice(-4)}
-                    </p>
-                  </div>
-
-                  {/* Account Type Badge */}
-                  <div className="inline-flex px-3 py-1 rounded-full bg-white/15 backdrop-blur-md border border-white/20">
-                    <span className="text-xs font-semibold text-white drop-shadow">
-                      {account.type}
-                    </span>
-                  </div>
+                  {/* Inner glow */}
+                  <div className="absolute inset-0 rounded-3xl pointer-events-none"></div>
                 </div>
 
-                {/* Inner glow */}
-                <div className="absolute inset-0 rounded-3xl shadow-[inset_0_0_60px_rgba(255,255,255,0.1)] pointer-events-none"></div>
-              </div>
-
-              {/* Account Details Below Card - White Glass */}
-              <div className="mt-4 relative rounded-2xl p-4 backdrop-blur-xl border border-white/30 bg-white/30 transition-all duration-300">
-                <div className="relative z-10 space-y-3">
-                  
-                  {/* Priority & Status */}
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <TrendingUp size={14} className="text-gray-700" />
-                      <span className="text-sm font-medium text-gray-700">Priority: {account.priority}</span>
-                    </div>
-                    <div className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
-                      account.balance >= 0 ? 'bg-ok/20 text-ok' : 'bg-nok/20 text-nok'
-                    }`}>
-                      {account.balance >= 0 ? 'Active' : 'Overdrawn'}
-                    </div>
-                  </div>
-
+                <div className="relative z-10 space-y-3 mt-4">
                   {/* Quick Actions */}
                   <div className="flex gap-2 pt-2">
-                    <button onClick={() => handleEdit(account.id!)}
-                      className="flex-1 px-3 py-2 rounded-xl bg-white/50 hover:bg-white/70 backdrop-blur-md text-sm font-medium 
-                      text-gray-700 transition-all border border-white/30">
+                    <Button onClick={() => handleEdit(account.id!)} className={`flex-1 h-14 ${getButtonStyle(theme)} font-bold text-base rounded-full shadow-lg
+                      hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 group relative overflow-hidden`}>
                       Edit
-                    </button>
-                    <button onClick={() => console.log('View transactions')}
-                      className="flex-1 px-3 py-2 rounded-xl bg-white/50 hover:bg-white/70 backdrop-blur-md text-sm font-medium 
-                      text-gray-700 transition-all border border-white/30">
+                    </Button>
+                    <Button onClick={() => console.log('View transactions')}
+                      className={`flex-1 h-14 ${getButtonStyle(theme)} font-bold text-base rounded-full shadow-lg
+                      hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 group relative overflow-hidden`}>
                       Transactions
-                    </button>
+                    </Button>
                   </div>
                 </div>
 
@@ -205,15 +197,14 @@ export default function AccountsDesktop() {
           ))}
 
           {/* Add Account Card */}
-          <button onClick={handleCreate} className="relative rounded-3xl p-6 backdrop-blur-xl border-2 border-dashed 
-          border-white/40 bg-white/20 hover:bg-white/30 hover:border-white/60 transition-all duration-300 flex flex-col 
-          items-center justify-center min-h-[320px] group">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform">
+          <Button onClick={handleCreate} className="mt-4 relative rounded-3xl p-6 backdrop-blur-xl border-2 border-dashed border-white/40 bg-white/20 hover:bg-white/30 
+          hover:border-white/60 transition-all duration-300 flex flex-col items-center justify-center min-h-[24rem] group">
+            <div className={`w-16 h-16 rounded-full ${getButtonStyle(theme)} flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform`}>
               <Plus size={32} className="text-white" />
             </div>
             <h3 className="text-xl font-bold text-gray-900 mb-2">Add New Account</h3>
             <p className="text-sm text-gray-600">Create a new bank account</p>
-          </button>
+          </Button>
         </div>
 
         {/* Empty State */}

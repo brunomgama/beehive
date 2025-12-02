@@ -158,7 +158,7 @@ export default function LandingDesktop() {
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <div className="bg-card rounded-2xl px-4 py-2 border border-border">
+            <div className="bg-card rounded-2xl px-4 py-2">
               <span className="text-sm text-muted-foreground">Current Month</span>
               <p className="text-lg font-bold text-foreground">{format(new Date(), 'MMMM yyyy')}</p>
             </div>
@@ -282,17 +282,6 @@ export default function LandingDesktop() {
                 <div>
                   <h3 className="text-xl font-bold drop-shadow-sm">Balance Trend</h3>
                   <p className="text-sm drop-shadow-sm">Last 30 days overview</p>
-                </div>
-                <div className="flex gap-2">
-                  <Button className="px-4 py-2 rounded-xl bg-gray-900/80 backdrop-blur-md text-sm font-medium transition-all hover:bg-gray-900">
-                    30D
-                  </Button>
-                  <Button className="px-4 py-2 rounded-xl text-sm font-medium hover:bg-white/40 backdrop-blur-md transition-all">
-                    90D
-                  </Button>
-                  <Button className="px-4 py-2 rounded-xl text-sm font-medium hover:bg-white/40 backdrop-blur-md transition-all">
-                    1Y
-                  </Button>
                 </div>
               </div>
               

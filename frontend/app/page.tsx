@@ -10,6 +10,8 @@ import AccountsPage from "./accounts/page"
 import Analytics from "./analytics/page"
 import Notes from "./notes/page"
 import DesktopHeader from "@/components/desktop/header/desktop_header"
+import MovementsPage from "./movements/page"
+import PlannedPage from "./planned/page"
 
 export default function Home() {
   const isMobile = useIsMobile()
@@ -20,7 +22,9 @@ export default function Home() {
     { id: 1, component: <Notes />, title: "Notes" },
     { id: 2, component: <Landing />, title: "Home" },
     { id: 3, component: <AccountsPage />, title: "Accounts" },
-    { id: 4, component: <Analytics />, title: "Analytics" }
+    { id: 4, component: <Analytics />, title: "Analytics" },
+    { id: 5, component: <MovementsPage />, title: "Movements" },
+    { id: 6, component: <PlannedPage />, title: "Planned" }
   ]
 
   return (
