@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription } from "@/components/ui/drawer"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -17,6 +17,7 @@ import { BankAccount } from "@/lib/api/bank/accounts-api"
 import { getButtonStyle, getThemeButtonStyle } from "@/lib/themes"
 import { movementApi, MovementCategory, MovementStatus, MovementType } from "@/lib/api/bank/movements-api"
 import { CurrencyInput } from "@/lib/util/currency-input"
+import { suggestCategories, getAllCategories } from "@/lib/util/category-suggestions"
 
 interface AddMovementDrawerProps {
   open: boolean
@@ -37,6 +38,7 @@ export function AddMovementDrawer({ open, onOpenChange, accounts, defaultAccount
   const [status, setStatus] = useState<MovementStatus>('CONFIRMED')
   const [loading, setLoading] = useState(false)
   const [showCategoryDrawer, setShowCategoryDrawer] = useState(false)
+  const [showAllCategories, setShowAllCategories] = useState(false)
 
   useEffect(() => {
     if (defaultAccountId) {
@@ -44,6 +46,28 @@ export function AddMovementDrawer({ open, onOpenChange, accounts, defaultAccount
       setAccountId(defaultAccountId)
     }
   }, [defaultAccountId])
+
+  const suggestedCategories = useMemo(() => {
+    if (!description.trim()) {
+      return []
+    }
+    return suggestCategories(description)
+  }, [description])
+
+  const displayCategories = useMemo(() => {
+    if (showAllCategories) {
+      return getAllCategories()
+    }
+    
+    if (suggestedCategories.length > 0) {
+      return suggestedCategories
+    }
+    
+    return [
+      'GROCERIES', 'RESTAURANTS', 'FUEL', 'SHOPPING', 'RENT',
+      'ELECTRICITY', 'WATER', 'GYM', 'ENTERTAINMENT', 'HEALTH', 'OTHER'
+    ] as MovementCategory[]
+  }, [suggestedCategories, showAllCategories])
 
   const categories: { value: MovementCategory; label: string; icon: React.ReactNode }[] = [
     // Housing
@@ -307,29 +331,56 @@ export function AddMovementDrawer({ open, onOpenChange, accounts, defaultAccount
       </Drawer>
 
       {/* Category Selection Drawer */}
-      <Drawer open={showCategoryDrawer} onOpenChange={setShowCategoryDrawer}>
+      <Drawer open={showCategoryDrawer} onOpenChange={(open) => {
+        setShowCategoryDrawer(open)
+        if (!open) {
+          setShowAllCategories(false)
+        }
+      }}>
         <DrawerContent className="border-none max-h-[85vh]" style={{ backgroundColor: 'var(--background)' }}>
           <DrawerHeader className="sticky top-0 z-10" style={{ backgroundColor: 'var(--background)' }}>
             <DrawerTitle>Select Category</DrawerTitle>
-            <DrawerDescription>Choose a category for this transaction</DrawerDescription>
+            <DrawerDescription>
+              {suggestedCategories.length > 0 && !showAllCategories 
+                ? 'Smart suggestions based on your description' 
+                : 'Choose a category for this transaction'}
+            </DrawerDescription>
           </DrawerHeader>
           
           <div className="px-4 pb-8 overflow-y-auto max-h-[calc(85vh-80px)]">
             <div className="grid grid-cols-2 gap-3">
-              {categories.map((cat) => (
-                <Button key={cat.value} type="button" onClick={() => { setCategory(cat.value) 
-                    setShowCategoryDrawer(false) 
+              {displayCategories.map((cat) => {
+                const categoryInfo = categories.find(c => c.value === cat)
+                if (!categoryInfo) return null
+                
+                return (
+                  <Button key={cat} type="button" onClick={() => { 
+                    setCategory(cat) 
+                    setShowCategoryDrawer(false)
+                    setShowAllCategories(false)
                   }} className={`flex flex-col items-center gap-3 p-4 rounded-2xl transition-all h-20 ${
-                    category === cat.value ? getThemeButtonStyle(theme, 'primary') + ' text-white'
+                    category === cat ? getThemeButtonStyle(theme, 'primary') + ' text-white'
                       : 'bg-card text-foreground hover:bg-muted'}`}>
-                  <div className={category === cat.value ? 'text-white' : 'text-muted-foreground'}>
-                    {cat.icon}
-                  </div>
-                  <span className="text-sm text-center">
-                    {cat.label}
+                    <div className={category === cat ? 'text-white' : 'text-muted-foreground'}>
+                      {categoryInfo.icon}
+                    </div>
+                    <span className="text-sm text-center">
+                      {categoryInfo.label}
+                    </span>
+                  </Button>
+                )
+              })}
+              
+              {/* More Button - only show if not showing all categories */}
+              {!showAllCategories && (
+                <Button type="button" onClick={() => setShowAllCategories(true)}
+                  className="flex flex-col items-center gap-3 p-4 rounded-2xl transition-all h-20 bg-muted/50 text-foreground hover:bg-muted border-2 border-dashed border-muted-foreground/30">
+                  <MoreHorizontal className="w-5 h-5 text-muted-foreground" />
+                  <span className="text-sm text-center font-semibold">
+                    More
                   </span>
                 </Button>
-              ))}
+              )}
             </div>
           </div>
         </DrawerContent>

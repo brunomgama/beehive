@@ -2,9 +2,10 @@
 
 import { User } from "@/lib/api/auth/auth-api"
 import { useEffect, useState } from "react"
-import { Plus, TrendingUp, Wallet } from "lucide-react"
+import { Plus, Repeat, TrendingUp, Wallet } from "lucide-react"
 import { useAccount } from "./account_context"
 import { AddMovementDrawer } from "./add_movement"
+import { AddTransferDrawer } from "./add_transfer"
 import { useTheme } from "@/contexts/theme-context"
 import { BankAccount, bankAccountApi } from "@/lib/api/bank/accounts-api"
 import { getCardGradient } from "@/lib/util/credit_card"
@@ -18,7 +19,8 @@ export function CardsCarousel({user}: {user: User}) {
     const [loading, setLoading] = useState(true)
     const [activeIndex, setActiveIndex] = useState(0)
     const [touchStart, setTouchStart] = useState<number>(0)
-    const [drawerOpen, setDrawerOpen] = useState(false)
+    const [drawerMovementOpen, setMovementDrawerOpen] = useState(false)
+    const [drawerTransferOpen, setTransferDrawerOpen] = useState(false)
     const { setActiveAccountId } = useAccount()
 
     useEffect(() => {
@@ -162,7 +164,7 @@ export function CardsCarousel({user}: {user: User}) {
             {/* Quick Actions */}
             <div className="px-6">
                 <div className="grid grid-cols-2 gap-4">
-                    <Button onClick={() => setDrawerOpen(true)} 
+                    <Button onClick={() => setMovementDrawerOpen(true)} 
                         className={`rounded-2xl p-7 shadow-sm flex items-center gap-4 hover:shadow-md transition-all duration-300 ${getButtonStyle(theme)}`}>
                         <Plus size={24} className={`${getButtonStyle(theme)}`} />
                         <div className="text-left">
@@ -171,17 +173,21 @@ export function CardsCarousel({user}: {user: User}) {
                         </div>
                     </Button>
 
-                    <Button className={`rounded-2xl p-7 shadow-sm flex items-center gap-4 hover:shadow-md transition-all duration-300 ${getButtonStyle(theme)}`}>
-                        <TrendingUp size={24} className={`${getButtonStyle(theme)}`} />
+                    <Button onClick={() => setTransferDrawerOpen(true)} 
+                        className={`rounded-2xl p-7 shadow-sm flex items-center gap-4 hover:shadow-md transition-all duration-300 ${getButtonStyle(theme)}`}>
+                        <Repeat size={24} className={`${getButtonStyle(theme)}`} />
                         <div className="text-left">
-                            <p className={`text-sm font-semibold ${getButtonStyle(theme)}`}>View</p>
-                            <p className={`text-xs opacity-70 ${getButtonStyle(theme)}`}>Analytics</p>
+                            <p className={`text-sm font-semibold ${getButtonStyle(theme)}`}>Transfer</p>
+                            <p className={`text-xs opacity-70 ${getButtonStyle(theme)}`}>Between Accounts</p>
                         </div>
                     </Button>
                 </div>
             </div>
 
-            <AddMovementDrawer open={drawerOpen} onOpenChange={setDrawerOpen} 
+            <AddMovementDrawer open={drawerMovementOpen} onOpenChange={setMovementDrawerOpen} 
+            accounts={accounts} defaultAccountId={accounts[activeIndex]?.id} onSuccess={handleMovementSuccess}/>
+
+            <AddTransferDrawer open={drawerTransferOpen} onOpenChange={setTransferDrawerOpen} 
             accounts={accounts} defaultAccountId={accounts[activeIndex]?.id} onSuccess={handleMovementSuccess}/>
         </div>
     )
