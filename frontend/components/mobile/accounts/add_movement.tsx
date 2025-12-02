@@ -26,7 +26,7 @@ export function AddMovementDrawer({ open, onOpenChange, accounts, defaultAccount
   const [accountId, setAccountId] = useState<number>(defaultAccountId || 0)
   const [category, setCategory] = useState<MovementCategory>('OTHER')
   const [type, setType] = useState<MovementType>('EXPENSE')
-  const [amount, setAmount] = useState<number>(0)
+  const [amount, setAmount] = useState<string>('')
   const [description, setDescription] = useState('')
   const [date, setDate] = useState(format(new Date(), 'yyyy-MM-dd'))
   const [status, setStatus] = useState<MovementStatus>('CONFIRMED')
@@ -59,14 +59,16 @@ export function AddMovementDrawer({ open, onOpenChange, accounts, defaultAccount
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
+    const numAmount = parseFloat(amount) || 0
+    
     console.log('=== SUBMIT ATTEMPT ===')
     console.log('accountId:', accountId)
-    console.log('amount:', amount)
+    console.log('amount:', numAmount)
     console.log('description:', description)
     console.log('type:', type)
     console.log('category:', category)
     
-    if (!accountId || accountId === 0 || !amount || !description) {
+    if (!accountId || accountId === 0 || !numAmount || !description) {
       return
     }
 
@@ -77,7 +79,7 @@ export function AddMovementDrawer({ open, onOpenChange, accounts, defaultAccount
         accountId: accountId,
         category: category,
         type: type,
-        amount: amount,
+        amount: numAmount,
         description: description,
         date: date,
         status: status
@@ -86,7 +88,7 @@ export function AddMovementDrawer({ open, onOpenChange, accounts, defaultAccount
       const result = await movementApi.create(movementData)
       
       if (result.data) {
-        setAmount(0)
+        setAmount('')
         setDescription('')
         setDate(format(new Date(), 'yyyy-MM-dd'))
         setCategory('OTHER')
@@ -105,8 +107,7 @@ export function AddMovementDrawer({ open, onOpenChange, accounts, defaultAccount
   }
 
   const handleAmountChange = (value: string) => {
-    const numValue = parseFloat(value) || 0
-    setAmount(numValue)
+    setAmount(value)
   }
 
   return (
@@ -143,7 +144,7 @@ export function AddMovementDrawer({ open, onOpenChange, accounts, defaultAccount
 
             {/* Amount */}
             <div className="mb-6">
-              <CurrencyInput value={amount.toString()} 
+              <CurrencyInput value={amount} 
                 onChange={handleAmountChange} placeholder="0.00" className="text-5xl font-bold"/>
             </div>
 
@@ -196,7 +197,7 @@ export function AddMovementDrawer({ open, onOpenChange, accounts, defaultAccount
             </div>
 
             {/* Submit Button */}
-            <Button type="submit" className={`w-full h-12 ${getButtonStyle(theme)}`} disabled={loading || !accountId || !amount || !description}>
+            <Button type="submit" className={`w-full h-12 ${getButtonStyle(theme)}`} disabled={loading || !accountId || !parseFloat(amount) || !description}>
               {loading ? 'Creating...' : 'Create Movement'}
             </Button>
           </form>

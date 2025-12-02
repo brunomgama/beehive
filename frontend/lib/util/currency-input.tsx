@@ -44,10 +44,12 @@ export const CurrencyInput = forwardRef<HTMLInputElement, CurrencyInputProps>(
         return
       }
       
-      // Prevent multiple decimal separators
-      if (isCommaOrPeriod && (value.includes('.') || value.includes(','))) {
-        e.preventDefault()
-        return
+      if (isCommaOrPeriod) {
+        const hasDecimal = value.includes('.') || value.includes(',')
+        if (hasDecimal) {
+          e.preventDefault()
+          return
+        }
       }
       
       // Limit to 2 decimal places
