@@ -19,6 +19,8 @@ export function PlannedMovements() {
 
   useEffect(() => {
     if (activeAccountId) {
+      setMovements([])
+      setLoading(true)
       fetchPlannedMovements()
     }
   }, [activeAccountId])
@@ -27,7 +29,6 @@ export function PlannedMovements() {
     if (!activeAccountId) return
     
     try {
-      setLoading(true)
       const result = await plannedMovementApi.getByAccountId(activeAccountId)
       if (result.data) {
         const sortedMovements = result.data
@@ -35,9 +36,12 @@ export function PlannedMovements() {
           .sort((a, b) => new Date(a.nextExecution).getTime() - new Date(b.nextExecution).getTime())
           .slice(0, 3)
         setMovements(sortedMovements)
+      } else {
+        setMovements([])
       }
     } catch (error) {
       console.error('Error fetching planned movements:', error)
+      setMovements([])
     } finally {
       setLoading(false)
     }

@@ -20,15 +20,16 @@ export function RecentMovements() {
 
   useEffect(() => {
     if (activeAccountId) {
+      setMovements([])
+      setLoading(true)
       fetchMovements()
     }
-  }, [activeAccountId, refreshKey])
+  }, [activeAccountId])
 
   const fetchMovements = async () => {
     if (!activeAccountId) return
     
     try {
-      setLoading(true)
       const result = await movementApi.getByAccountId(activeAccountId)
       if (result.data) {
         const sortedMovements = result.data
@@ -41,9 +42,12 @@ export function RecentMovements() {
           })
           .slice(0, 5)
         setMovements(sortedMovements)
+      } else {
+        setMovements([])
       }
     } catch (error) {
       console.error('Error fetching movements:', error)
+      setMovements([])
     } finally {
       setLoading(false)
     }
@@ -51,13 +55,13 @@ export function RecentMovements() {
 
   useEffect(() => {
     (window as any).refreshRecentMovements = () => {
-      setRefreshKey(prev => prev + 1)
+      fetchMovements()
     }
     
     return () => {
       delete (window as any).refreshRecentMovements
     }
-  }, [])
+  }, [activeAccountId])
 
   if (!activeAccountId) {
     return null
