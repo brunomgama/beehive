@@ -11,6 +11,13 @@ import Image from "next/image"
 import { Movement, movementApi } from "@/lib/api/bank/movements-api"
 import { formatBalance } from "@/lib/util/converter"
 
+const formatCategoryLabel = (category: string): string => {
+  return category
+    .split('_')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ')
+}
+
 export function RecentMovements() {
   const { theme } = useTheme()
   const [movements, setMovements] = useState<Movement[]>([])
@@ -152,7 +159,7 @@ export function RecentMovements() {
                   }`}>
                     {movement.type === 'INCOME' ? '+' : '-'}{formatBalance(Math.abs(movement.amount))}
                   </p>
-                  <p className="text-xs text-muted-foreground capitalize">{movement.category.toLowerCase()}</p>
+                  <p className="text-xs text-muted-foreground">{formatCategoryLabel(movement.category)}</p>
                 </div>
               </div>
             </div>
