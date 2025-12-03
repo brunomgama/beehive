@@ -6,252 +6,18 @@ import { useTheme } from '@/contexts/theme-context'
 import { useAuth } from '@/contexts/auth-context'
 import { getThemeButtonStyle, getButtonStyle } from '@/lib/themes'
 import { startOfDay, startOfWeek, startOfMonth, startOfYear, endOfDay, endOfWeek, endOfMonth, endOfYear,
-   subDays, subWeeks, subMonths, subYears, format, eachDayOfInterval, eachWeekOfInterval, eachMonthOfInterval, isWithinInterval } from 'date-fns'
-import { Movement, movementApi, MovementCategory } from '@/lib/api/bank/movements-api'
+   format, eachDayOfInterval, eachWeekOfInterval, eachMonthOfInterval, isWithinInterval } from 'date-fns'
+import { Movement, movementApi } from '@/lib/api/bank/movements-api'
 import { BankAccount, bankAccountApi } from '@/lib/api/bank/accounts-api'
 import { formatBalance } from '@/lib/util/converter'
-
-type TimeFilter = 'day' | 'week' | 'month' | 'year'
+import { CATEGORY_COLORS } from '@/lib/util/category-constants'
+import { useAnalyticsStats, TimeFilter } from '@/hooks/use-analytics-stats'
+import { useCategoryBreakdown } from '@/hooks/use-category-breakdown'
 
 interface ChartDataPoint {
   label: string
   income: number
   expense: number
-}
-
-interface CategoryData {
-  name: string
-  amount: number
-  percentage: number
-  category: MovementCategory
-}
-
-const CATEGORY_LABELS: Record<MovementCategory, string> = {
-  // Transfers
-  TRANSFER: 'Transfer',
-  
-  // Housing
-  RENT: 'Rent',
-  PROPERTY_TAXES: 'Property Taxes',
-  HOME_MAINTENANCE_REPAIRS: 'Home Maintenance',
-  HOME_INSURANCE: 'Home Insurance',
-  HOUSEHOLD_SUPPLIES_FURNITURE: 'Household Items',
-  
-  // Transportation
-  FUEL: 'Fuel',
-  PUBLIC_TRANSPORT: 'Public Transport',
-  UBER: 'Uber',
-  CAR_MAINTENANCE: 'Car Maintenance',
-  PARKING: 'Parking',
-  VEHICLE_INSURANCE: 'Vehicle Insurance',
-  TOLLS: 'Tolls',
-  
-  // Shopping
-  SHOPPING: 'Shopping',
-  CLOTHING: 'Clothing',
-  ELECTRONICS: 'Electronics',
-  GIFTS: 'Gifts',
-  BEAUTY_COSMETICS: 'Beauty',
-  
-  // Food & Dining
-  GROCERIES: 'Groceries',
-  RESTAURANTS: 'Restaurants',
-  FAST_FOOD: 'Fast Food',
-  COFFEE_SHOPS: 'Coffee Shops',
-  ALCOHOL_BARS: 'Alcohol & Bars',
-  FOOD_DRINKS: 'Food & Drinks',
-  
-  // Entertainment
-  ENTERTAINMENT: 'Entertainment',
-  MOVIES: 'Movies',
-  EVENTS: 'Events',
-  GAMES: 'Games',
-  NIGHTLIFE: 'Nightlife',
-  HOBBIES: 'Hobbies',
-  GYM: 'Gym',
-  
-  // Technology & Services
-  TECH: 'Technology',
-  SOFTWARE_SUBSCRIPTIONS: 'Software',
-  INTERNET_SERVICES: 'Internet Services',
-  MOBILE_PHONE_PLANS: 'Mobile Plans',
-  NET: 'Internet',
-  
-  // Utilities
-  UTILITIES: 'Utilities',
-  WATER: 'Water',
-  ELECTRICITY: 'Electricity',
-  GAS: 'Gas',
-  
-  // Business
-  OFFICE_SUPPLIES: 'Office Supplies',
-  BUSINESS_TRAVEL: 'Business Travel',
-  PROFESSIONAL_SERVICES: 'Professional',
-  
-  // Education
-  EDUCATION: 'Education',
-  ONLINE_COURSES: 'Online Courses',
-  CLASSES: 'Classes',
-  
-  // Insurance
-  HEALTH_INSURANCE: 'Health Insurance',
-  CAR_INSURANCE: 'Car Insurance',
-  LIFE_INSURANCE: 'Life Insurance',
-  TRAVEL_INSURANCE: 'Travel Insurance',
-  
-  // Health & Medical
-  HEALTH: 'Health',
-  PHARMACY: 'Pharmacy',
-  MEDICAL: 'Medical',
-  THERAPY: 'Therapy',
-  
-  // Pets
-  PET_FOOD: 'Pet Food',
-  VET_VISITS: 'Vet Visits',
-  PET_ACCESSORIES: 'Pet Accessories',
-  PET_GROOMING: 'Pet Grooming',
-  
-  // Banking & Investments
-  BANK_FEES: 'Bank Fees',
-  INVESTMENTS: 'Investments',
-  
-  // Streaming & Subscriptions
-  STREAMING_SERVICES: 'Streaming',
-  VIDEO_STREAMING: 'Video Streaming',
-  MUSIC_STREAMING: 'Music Streaming',
-  CLOUD_STORAGE: 'Cloud Storage',
-  DIGITAL_MAGAZINES: 'Digital Magazines',
-  NEWS_SUBSCRIPTIONS: 'News',
-  
-  // Travel
-  HOTELS: 'Hotels',
-  FLIGHTS: 'Flights',
-  CAR_RENTAL: 'Car Rental',
-  TOURS: 'Tours',
-  
-  // Income
-  SALARY: 'Salary',
-  FREELANCING: 'Freelancing',
-  INVESTMENT_INCOME: 'Investment Income',
-  REFUNDS: 'Refunds',
-  RENTAL_INCOME: 'Rental Income',
-  
-  // General
-  OTHER: 'Other'
-}
-
-const CATEGORY_COLORS: Record<MovementCategory, string> = {
-  // Transfers
-  TRANSFER: 'bg-slate-500',
-  
-  // Housing
-  RENT: 'bg-amber-600',
-  PROPERTY_TAXES: 'bg-amber-700',
-  HOME_MAINTENANCE_REPAIRS: 'bg-orange-600',
-  HOME_INSURANCE: 'bg-orange-500',
-  HOUSEHOLD_SUPPLIES_FURNITURE: 'bg-yellow-600',
-  
-  // Transportation
-  FUEL: 'bg-green-600',
-  PUBLIC_TRANSPORT: 'bg-green-500',
-  UBER: 'bg-emerald-500',
-  CAR_MAINTENANCE: 'bg-teal-600',
-  PARKING: 'bg-teal-500',
-  VEHICLE_INSURANCE: 'bg-cyan-600',
-  TOLLS: 'bg-cyan-500',
-  
-  // Shopping
-  SHOPPING: 'bg-purple-500',
-  CLOTHING: 'bg-purple-600',
-  ELECTRONICS: 'bg-indigo-600',
-  GIFTS: 'bg-pink-400',
-  BEAUTY_COSMETICS: 'bg-fuchsia-500',
-  
-  // Food & Dining
-  GROCERIES: 'bg-orange-500',
-  RESTAURANTS: 'bg-red-500',
-  FAST_FOOD: 'bg-red-600',
-  COFFEE_SHOPS: 'bg-amber-500',
-  ALCOHOL_BARS: 'bg-rose-600',
-  FOOD_DRINKS: 'bg-orange-500',
-  
-  // Entertainment
-  ENTERTAINMENT: 'bg-pink-500',
-  MOVIES: 'bg-violet-500',
-  EVENTS: 'bg-fuchsia-600',
-  GAMES: 'bg-indigo-500',
-  NIGHTLIFE: 'bg-purple-700',
-  HOBBIES: 'bg-pink-600',
-  GYM: 'bg-red-500',
-  
-  // Technology & Services
-  TECH: 'bg-cyan-500',
-  SOFTWARE_SUBSCRIPTIONS: 'bg-sky-500',
-  INTERNET_SERVICES: 'bg-blue-600',
-  MOBILE_PHONE_PLANS: 'bg-blue-500',
-  NET: 'bg-blue-500',
-  
-  // Utilities
-  UTILITIES: 'bg-yellow-500',
-  WATER: 'bg-blue-400',
-  ELECTRICITY: 'bg-yellow-400',
-  GAS: 'bg-orange-400',
-  
-  // Business
-  OFFICE_SUPPLIES: 'bg-slate-600',
-  BUSINESS_TRAVEL: 'bg-slate-500',
-  PROFESSIONAL_SERVICES: 'bg-gray-600',
-  
-  // Education
-  EDUCATION: 'bg-indigo-500',
-  ONLINE_COURSES: 'bg-indigo-600',
-  CLASSES: 'bg-violet-600',
-  
-  // Insurance
-  HEALTH_INSURANCE: 'bg-emerald-600',
-  CAR_INSURANCE: 'bg-teal-700',
-  LIFE_INSURANCE: 'bg-cyan-700',
-  TRAVEL_INSURANCE: 'bg-sky-600',
-  
-  // Health & Medical
-  HEALTH: 'bg-red-500',
-  PHARMACY: 'bg-red-600',
-  MEDICAL: 'bg-rose-600',
-  THERAPY: 'bg-pink-600',
-  
-  // Pets
-  PET_FOOD: 'bg-amber-500',
-  VET_VISITS: 'bg-orange-600',
-  PET_ACCESSORIES: 'bg-yellow-500',
-  PET_GROOMING: 'bg-amber-400',
-  
-  // Banking & Investments
-  BANK_FEES: 'bg-slate-700',
-  INVESTMENTS: 'bg-green-600',
-  
-  // Streaming & Subscriptions
-  STREAMING_SERVICES: 'bg-rose-500',
-  VIDEO_STREAMING: 'bg-red-500',
-  MUSIC_STREAMING: 'bg-purple-500',
-  CLOUD_STORAGE: 'bg-sky-500',
-  DIGITAL_MAGAZINES: 'bg-blue-600',
-  NEWS_SUBSCRIPTIONS: 'bg-indigo-600',
-  
-  // Travel
-  HOTELS: 'bg-teal-500',
-  FLIGHTS: 'bg-sky-600',
-  CAR_RENTAL: 'bg-cyan-600',
-  TOURS: 'bg-emerald-500',
-  
-  // Income
-  SALARY: 'bg-green-600',
-  FREELANCING: 'bg-emerald-600',
-  INVESTMENT_INCOME: 'bg-teal-600',
-  REFUNDS: 'bg-lime-500',
-  RENTAL_INCOME: 'bg-green-500',
-  
-  // General
-  OTHER: 'bg-gray-500'
 }
 
 export function AnalyticsMobile() {
@@ -262,7 +28,11 @@ export function AnalyticsMobile() {
   const [accounts, setAccounts] = useState<BankAccount[]>([])
   const [loading, setLoading] = useState(true)
 
-  // Fetch all accounts and movements for the user
+  // Use cached hooks
+  const { stats: cachedStats } = useAnalyticsStats(user?.id, timeFilter)
+  const { categoryData: cachedCategoryData } = useCategoryBreakdown(user?.id, timeFilter)
+
+  // Fetch all accounts and movements for the user (for chart data fallback)
   useEffect(() => {
     const fetchData = async () => {
       if (!user?.id) return
@@ -270,12 +40,10 @@ export function AnalyticsMobile() {
       try {
         setLoading(true)
         
-        // Fetch user accounts
         const accountsResult = await bankAccountApi.getByUserId(user.id)
         if (accountsResult.data) {
           setAccounts(accountsResult.data)
           
-          // Fetch movements for all accounts
           const allMovements: Movement[] = []
           for (const account of accountsResult.data) {
             if (account.id) {
@@ -303,78 +71,34 @@ export function AnalyticsMobile() {
     
     switch (timeFilter) {
       case 'day':
-        return {
-          current: { start: startOfDay(now), end: endOfDay(now) },
-          previous: { start: startOfDay(subDays(now, 1)), end: endOfDay(subDays(now, 1)) }
-        }
+        return { start: startOfDay(now), end: endOfDay(now) }
       case 'week':
-        return {
-          current: { start: startOfWeek(now, { weekStartsOn: 1 }), end: endOfWeek(now, { weekStartsOn: 1 }) },
-          previous: { start: startOfWeek(subWeeks(now, 1), { weekStartsOn: 1 }), end: endOfWeek(subWeeks(now, 1), { weekStartsOn: 1 }) }
-        }
+        return { start: startOfWeek(now, { weekStartsOn: 1 }), end: endOfWeek(now, { weekStartsOn: 1 }) }
       case 'month':
-        return {
-          current: { start: startOfMonth(now), end: endOfMonth(now) },
-          previous: { start: startOfMonth(subMonths(now, 1)), end: endOfMonth(subMonths(now, 1)) }
-        }
+        return { start: startOfMonth(now), end: endOfMonth(now) }
       case 'year':
-        return {
-          current: { start: startOfYear(now), end: endOfYear(now) },
-          previous: { start: startOfYear(subYears(now, 1)), end: endOfYear(subYears(now, 1)) }
-        }
+        return { start: startOfYear(now), end: endOfYear(now) }
     }
   }, [timeFilter])
 
-  // Filter movements by date range
-  const filterMovementsByRange = (movs: Movement[], range: { start: Date, end: Date }) => {
-    return movs.filter(m => {
-      const date = new Date(m.date)
-      return isWithinInterval(date, { start: range.start, end: range.end })
-    })
+  // Use cached stats if available
+  const stats = cachedStats ?? {
+    totalIncome: 0,
+    totalExpenses: 0,
+    netBalance: 0,
+    incomeChange: 0,
+    expenseChange: 0
   }
 
-  // Calculate stats
-  const stats = useMemo(() => {
-    const currentMovements = filterMovementsByRange(movements, dateRanges.current)
-    const previousMovements = filterMovementsByRange(movements, dateRanges.previous)
-    
-    // Exclude TRANSFER category from analytics
-    const currentIncome = currentMovements
-      .filter(m => m.type === 'INCOME' && m.status === 'CONFIRMED' && m.category !== 'TRANSFER')
-      .reduce((sum, m) => sum + m.amount, 0)
-    
-    const currentExpenses = currentMovements
-      .filter(m => m.type === 'EXPENSE' && m.status === 'CONFIRMED' && m.category !== 'TRANSFER')
-      .reduce((sum, m) => sum + Math.abs(m.amount), 0)
-    
-    const previousIncome = previousMovements
-      .filter(m => m.type === 'INCOME' && m.status === 'CONFIRMED' && m.category !== 'TRANSFER')
-      .reduce((sum, m) => sum + m.amount, 0)
-    
-    const previousExpenses = previousMovements
-      .filter(m => m.type === 'EXPENSE' && m.status === 'CONFIRMED' && m.category !== 'TRANSFER')
-      .reduce((sum, m) => sum + Math.abs(m.amount), 0)
-    
-    const incomeChange = previousIncome > 0 
-      ? ((currentIncome - previousIncome) / previousIncome) * 100 
-      : currentIncome > 0 ? 100 : 0
-    
-    const expenseChange = previousExpenses > 0 
-      ? ((currentExpenses - previousExpenses) / previousExpenses) * 100 
-      : currentExpenses > 0 ? 100 : 0
-    
-    return {
-      totalIncome: currentIncome,
-      totalExpenses: currentExpenses,
-      netBalance: currentIncome - currentExpenses,
-      incomeChange: Number(incomeChange.toFixed(1)),
-      expenseChange: Number(expenseChange.toFixed(1))
-    }
-  }, [movements, dateRanges])
+  // Use cached category data if available
+  const categoryData = cachedCategoryData ?? []
 
-  // Generate chart data
+  // Generate chart data (still calculated from movements for real-time granularity)
   const chartData = useMemo((): ChartDataPoint[] => {
-    const currentMovements = filterMovementsByRange(movements, dateRanges.current)
+    const currentMovements = movements.filter(m => {
+      const date = new Date(m.date)
+      return isWithinInterval(date, { start: dateRanges.start, end: dateRanges.end })
+    })
     
     switch (timeFilter) {
       case 'day': {
@@ -394,7 +118,7 @@ export function AnalyticsMobile() {
         })
       }
       case 'week': {
-        const days = eachDayOfInterval({ start: dateRanges.current.start, end: dateRanges.current.end })
+        const days = eachDayOfInterval({ start: dateRanges.start, end: dateRanges.end })
         return days.map(day => {
           const dayMovements = currentMovements.filter(m => 
             format(new Date(m.date), 'yyyy-MM-dd') === format(day, 'yyyy-MM-dd')
@@ -407,7 +131,7 @@ export function AnalyticsMobile() {
         })
       }
       case 'month': {
-        const weeks = eachWeekOfInterval({ start: dateRanges.current.start, end: dateRanges.current.end }, { weekStartsOn: 1 })
+        const weeks = eachWeekOfInterval({ start: dateRanges.start, end: dateRanges.end }, { weekStartsOn: 1 })
         return weeks.map((weekStart, i) => {
           const weekEnd = endOfWeek(weekStart, { weekStartsOn: 1 })
           const weekMovements = currentMovements.filter(m => {
@@ -422,7 +146,7 @@ export function AnalyticsMobile() {
         })
       }
       case 'year': {
-        const months = eachMonthOfInterval({ start: dateRanges.current.start, end: dateRanges.current.end })
+        const months = eachMonthOfInterval({ start: dateRanges.start, end: dateRanges.end })
         return months.map(monthStart => {
           const monthEnd = endOfMonth(monthStart)
           const monthMovements = currentMovements.filter(m => {
@@ -438,29 +162,6 @@ export function AnalyticsMobile() {
       }
     }
   }, [movements, dateRanges, timeFilter])
-
-  // Calculate category breakdown
-  const categoryData = useMemo((): CategoryData[] => {
-    const currentMovements = filterMovementsByRange(movements, dateRanges.current)
-    const expenses = currentMovements.filter(m => m.type === 'EXPENSE' && m.status === 'CONFIRMED')
-    
-    const categoryTotals = expenses.reduce((acc, m) => {
-      acc[m.category] = (acc[m.category] || 0) + Math.abs(m.amount)
-      return acc
-    }, {} as Record<MovementCategory, number>)
-    
-    const totalExpenses = Object.values(categoryTotals).reduce((s, v) => s + v, 0)
-    
-    return Object.entries(categoryTotals)
-      .map(([category, amount]) => ({
-        name: CATEGORY_LABELS[category as MovementCategory],
-        amount,
-        percentage: totalExpenses > 0 ? Math.round((amount / totalExpenses) * 100) : 0,
-        category: category as MovementCategory
-      }))
-      .sort((a, b) => b.amount - a.amount)
-      .slice(0, 6)
-  }, [movements, dateRanges])
 
   const maxValue = Math.max(...chartData.flatMap(d => [d.income, d.expense]), 1)
 
@@ -512,15 +213,9 @@ export function AnalyticsMobile() {
         {/* Time Filter */}
         <div className="grid grid-cols-4 gap-2 bg-card rounded-2xl p-2 shadow-sm border border-border">
           {(['day', 'week', 'month', 'year'] as TimeFilter[]).map((filter) => (
-            <button
-              key={filter}
-              onClick={() => setTimeFilter(filter)}
+            <button key={filter} onClick={() => setTimeFilter(filter)}
               className={`py-2 rounded-xl text-sm font-semibold transition-all ${
-                timeFilter === filter
-                  ? `${getButtonStyle(theme)} shadow-md`
-                  : 'text-muted-foreground hover:bg-muted'
-              }`}
-            >
+                timeFilter === filter ? `${getButtonStyle(theme)} shadow-md` : 'text-muted-foreground hover:bg-muted'}`}>
               {filter.charAt(0).toUpperCase() + filter.slice(1)}
             </button>
           ))}

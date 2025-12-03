@@ -1,17 +1,21 @@
 'use client'
 
 import { useState, useEffect, useMemo } from "react"
-import { ArrowUpRight, ArrowDownRight, TrendingUp, Wallet, Calendar, Clock } from "lucide-react"
+import { ArrowUpRight, ArrowDownRight, TrendingUp, Wallet, Clock } from "lucide-react"
 import { useTheme } from "@/contexts/theme-context"
 import { useAuth } from "@/contexts/auth-context"
 import { getCardStyle, getThemeColors } from "@/lib/themes"
-import { startOfMonth, endOfMonth, isWithinInterval, eachDayOfInterval, format, subDays, addDays, isBefore, isAfter } from "date-fns"
 import { XAxis, YAxis, Area, AreaChart } from "recharts"
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/line-chart"
 import { Movement, movementApi } from "@/lib/api/bank/movements-api"
 import { BankAccount, bankAccountApi } from "@/lib/api/bank/accounts-api"
 import { PlannedMovement, plannedMovementApi } from "@/lib/api/bank/planned-api"
 import { formatBalance } from "@/lib/util/converter"
+import { useTotalBalance } from "@/hooks/use-total-balance"
+import { useMonthIncome } from "@/hooks/use-month-income"
+import { useMonthExpenses } from "@/hooks/use-month-expenses"
+import { useUpcomingPlanned } from "@/hooks/use-upcoming-planned"
+import { useBalanceTrend } from "@/hooks/use-balance-trend"
 
 export default function LandingMobile() {
   const { theme } = useTheme()
@@ -20,6 +24,12 @@ export default function LandingMobile() {
   const [ plannedMovements, setPlannedMovements ] = useState<PlannedMovement[]>([])
   const [ accounts, setAccounts ] = useState<BankAccount[]>([])
   const [ loading, setLoading ] = useState(true)
+  
+  const { totalBalance } = useTotalBalance(user?.id)
+  const { monthIncome } = useMonthIncome(user?.id)
+  const { monthExpenses } = useMonthExpenses(user?.id)
+  const { upcomingPlanned: cachedUpcomingPlanned } = useUpcomingPlanned(user?.id)
+  const { balanceTrend: cachedBalanceTrend } = useBalanceTrend(user?.id)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -68,123 +78,24 @@ export default function LandingMobile() {
   }), [theme]) satisfies ChartConfig
 
   const stats = useMemo(() => {
-    const now = new Date()
-    const monthStart = startOfMonth(now)
-    const monthEnd = endOfMonth(now)
+    const calculatedBalance = accounts.reduce((sum, acc) => sum + acc.balance, 0)
     
-    const monthMovements = movements.filter(m => {
-      const date = new Date(m.date)
-      return isWithinInterval(date, { start: monthStart, end: monthEnd }) && m.status === 'CONFIRMED' && m.category !== 'TRANSFER'
-    })
-    
-    const totalBalance = accounts.reduce((sum, acc) => sum + acc.balance, 0)
-    const monthIncome = monthMovements.filter(m => m.type === 'INCOME').reduce((sum, m) => sum + m.amount, 0)
-    const monthExpenses = monthMovements.filter(m => m.type === 'EXPENSE').reduce((sum, m) => sum + Math.abs(m.amount), 0)
-    
-    return { totalBalance, monthIncome, monthExpenses }
-  }, [movements, accounts])
+    return {
+      totalBalance: totalBalance ?? calculatedBalance,
+      monthIncome: monthIncome ?? 0,
+      monthExpenses: monthExpenses ?? 0
+    }
+  }, [accounts, totalBalance, monthIncome, monthExpenses])
 
-  const upcomingPlanned = useMemo(() => {
-    const now = new Date()
-    const futureDate = addDays(now, 30)
-    
-    return plannedMovements
-      .filter(pm => {
-        const nextExecution = new Date(pm.nextExecution)
-        return pm.status !== 'CANCELLED' && pm.status !== 'FAILED' && 
-               isAfter(nextExecution, now) && isBefore(nextExecution, futureDate)
-      })
-      .sort((a, b) => new Date(a.nextExecution).getTime() - new Date(b.nextExecution).getTime())
-      .slice(0, 3)
-  }, [plannedMovements])
-
+  const upcomingPlanned = cachedUpcomingPlanned ?? []
+  
   const plannedStats = useMemo(() => {
-    const now = new Date()
-    const futureDate = addDays(now, 30)
-    
-    const upcoming = plannedMovements.filter(pm => {
-      const nextExecution = new Date(pm.nextExecution)
-      return pm.status !== 'CANCELLED' && pm.status !== 'FAILED' && 
-             isAfter(nextExecution, now) && isBefore(nextExecution, futureDate)
-    })
-    
-    const totalIncome = upcoming.filter(pm => pm.type === 'INCOME').reduce((sum, pm) => sum + pm.amount, 0)
-    const totalExpenses = upcoming.filter(pm => pm.type === 'EXPENSE').reduce((sum, pm) => sum + Math.abs(pm.amount), 0)
-    
-    return { totalIncome, totalExpenses, count: upcoming.length }
-  }, [plannedMovements])
+    const totalIncome = upcomingPlanned.filter(pm => pm.type === 'INCOME').reduce((sum, pm) => sum + pm.amount, 0)
+    const totalExpenses = upcomingPlanned.filter(pm => pm.type === 'EXPENSE').reduce((sum, pm) => sum + Math.abs(pm.amount), 0)
+    return { totalIncome, totalExpenses, count: upcomingPlanned.length }
+  }, [upcomingPlanned])
 
-  const balanceTrend = useMemo(() => {
-    const now = new Date()
-    const startDate = subDays(now, 14)
-    const endDate = addDays(now, 14)
-    const days = eachDayOfInterval({ start: startDate, end: endDate })
-    
-    const currentBalance = accounts.reduce((sum, acc) => sum + acc.balance, 0)
-    const confirmedMovements = movements.filter(m => m.status === 'CONFIRMED')
-    const activePlanned = plannedMovements.filter(pm => pm.status !== 'CANCELLED' && pm.status !== 'FAILED')
-    
-    const balanceByDay = days.map(day => {
-      const dayStr = format(day, 'yyyy-MM-dd')
-      const nowStr = format(now, 'yyyy-MM-dd')
-      const isToday = nowStr === dayStr
-      const isFuture = isAfter(day, now)
-      
-      let dayBalance = currentBalance
-      
-      if (!isFuture && !isToday) {
-        const pastMovements = confirmedMovements.filter(m => {
-          const movDate = format(new Date(m.date), 'yyyy-MM-dd')
-          return movDate > dayStr && movDate <= nowStr
-        })
-        
-        pastMovements.forEach(m => {
-          if (m.type === 'INCOME') {
-            dayBalance -= m.amount
-          } else {
-            dayBalance += Math.abs(m.amount)
-          }
-        })
-      } else if (isFuture) {
-        const futureConfirmed = confirmedMovements.filter(m => {
-          const movDate = format(new Date(m.date), 'yyyy-MM-dd')
-          return movDate > nowStr && movDate <= dayStr
-        })
-        
-        futureConfirmed.forEach(m => {
-          if (m.type === 'INCOME') {
-            dayBalance += m.amount
-          } else {
-            dayBalance -= Math.abs(m.amount)
-          }
-        })
-        
-        const plannedForDay = activePlanned.filter(pm => {
-          const pmDate = format(new Date(pm.nextExecution), 'yyyy-MM-dd')
-          return pmDate > nowStr && pmDate <= dayStr
-        })
-        
-        plannedForDay.forEach(pm => {
-          if (pm.type === 'INCOME') {
-            dayBalance += pm.amount
-          } else {
-            dayBalance -= Math.abs(pm.amount)
-          }
-        })
-      }
-      
-      return {
-        date: format(day, 'MMM d'),
-        fullDate: dayStr,
-        actual: !isFuture ? dayBalance : null,
-        projected: isFuture || isToday ? dayBalance : null,
-        isToday,
-        isFuture
-      }
-    })
-    
-    return balanceByDay
-  }, [movements, plannedMovements, accounts])
+  const balanceTrend = cachedBalanceTrend ?? []
 
   if (loading) {
     return (
@@ -341,7 +252,7 @@ export default function LandingMobile() {
 
           {/* Expense Card */}
           <div className="bg-card rounded-3xl p-5 shadow-sm border border-border">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between mb-3">
               <p className="text-sm text-muted-foreground">Expenses</p>
               <div className="w-8 h-8 bg-nok/20 rounded-full flex items-center justify-center">
                 <ArrowDownRight size={16} className="text-nok-foreground" />
