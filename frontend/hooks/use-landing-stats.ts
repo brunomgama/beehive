@@ -36,46 +36,58 @@ export interface LandingStats {
  * Returns cached value instantly if available, otherwise fetches from API
  */
 export function useLandingStats(userId: number | undefined) {
-  const [stats, setStats] = useState<LandingStats | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<Error | null>(null)
+    const [stats, setStats] = useState<LandingStats | null>(null)
+    const [loading, setLoading] = useState(false)
+    const [error, setError] = useState<Error | null>(null)
+  
+    useEffect(() => {
+        let isCancelled = false
 
-  useEffect(() => {
-    const fetchLandingStats = async () => {
-      if (!userId) return
+        const fetchLandingStats = async () => {
+            if (!userId) return
 
-      try {
-        setLoading(true)
-        setError(null)
+            try {
+                setLoading(true)
+                setError(null)
 
-        const cached = dataCache.get<LandingStats>(CacheKeys.landingStats(userId))
-        if (cached !== null) {
-          setStats(cached)
-          setLoading(false)
-          return
+                const cached = dataCache.get<LandingStats>(CacheKeys.landingStats(userId))
+
+            if (cached !== null) {
+                if (!isCancelled) {
+                    setStats(cached)
+                    setLoading(false)
+                }
+                return
+            }   
+
+            const response = await apiService.get<LandingStats>(`${API_ENDPOINTS.bank.accounts}/landing/${userId}`)
+
+            if (isCancelled) return 
+            if (response.error) {
+                throw new Error(response.error)
+            }
+
+            if (response.data) {
+                dataCache.set(CacheKeys.landingStats(userId), response.data, 30 * 60 * 1000)
+                setStats(response.data)
+            }
+        } catch (err) {
+            if (!isCancelled) {
+                setError(err as Error)
+                console.error('Error fetching landing stats:', err)
+            }
+        } finally {
+            if (!isCancelled) {
+                setLoading(false)
+            }
         }
-
-        const response = await apiService.get<LandingStats>(
-          `${API_ENDPOINTS.bank.accounts}/landing/${userId}`
-        )
-        
-        if (response.error) {
-          throw new Error(response.error)
-        }
-        
-        if (response.data) {
-          dataCache.set(CacheKeys.landingStats(userId), response.data, 30 * 60 * 1000)
-          setStats(response.data)
-        }
-      } catch (err) {
-        setError(err as Error)
-        console.error('Error fetching landing stats:', err)
-      } finally {
-        setLoading(false)
-      }
     }
 
     fetchLandingStats()
+
+    return () => {
+        isCancelled = true
+    }
   }, [userId])
 
   return { stats, loading, error }

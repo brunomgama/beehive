@@ -14,7 +14,6 @@ export default function LandingMobile() {
   const { theme } = useTheme()
   const { user } = useAuth()
   
-  // Single hook to fetch all landing data
   const { stats, loading, error } = useLandingStats(user?.id)
 
   const chartConfig = useMemo(() => ({
@@ -23,19 +22,6 @@ export default function LandingMobile() {
       color: getThemeColors(theme).primary,
     },
   }), [theme]) satisfies ChartConfig
-
-  const plannedStats = useMemo(() => {
-    if (!stats?.upcomingPayments) return { totalIncome: 0, totalExpenses: 0 }
-    
-    const totalIncome = stats.upcomingPayments
-      .filter(pm => pm.type === 'INCOME')
-      .reduce((sum, pm) => sum + pm.amount, 0)
-    const totalExpenses = stats.upcomingPayments
-      .filter(pm => pm.type === 'EXPENSE')
-      .reduce((sum, pm) => sum + Math.abs(pm.amount), 0)
-    
-    return { totalIncome, totalExpenses }
-  }, [stats?.upcomingPayments])
 
   if (loading) {
     return (

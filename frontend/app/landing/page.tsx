@@ -6,14 +6,5 @@ import { useIsMobile } from '@/hooks/use-mobile'
 
 export default function Landing() {
   const isMobile = useIsMobile()
-
-  return (
-    <>
-      {isMobile ? (
-        <LandingMobile />
-      ) : (
-        <LandingDesktop />
-      )}
-    </>
-  )
+  return isMobile ? <LandingMobile /> : <LandingDesktop />
 }
