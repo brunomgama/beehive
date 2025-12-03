@@ -60,7 +60,7 @@ export function AddTransferDrawer({ open, onOpenChange, accounts, defaultAccount
     try {
       const expenseData = {
         accountId: fromAccountId,
-        category: 'INVESTMENTS' as const,
+        category: 'TRANSFER' as const,
         type: 'EXPENSE' as const,
         amount: numAmount,
         description: `${description} to ${accounts.find(a => a.id === toAccountId)?.accountName}`,
@@ -78,7 +78,7 @@ export function AddTransferDrawer({ open, onOpenChange, accounts, defaultAccount
 
       const incomeData = {
         accountId: toAccountId,
-        category: 'INVESTMENTS' as const,
+        category: 'TRANSFER' as const,
         type: 'INCOME' as const,
         amount: numAmount,
         description: `${description} from ${accounts.find(a => a.id === fromAccountId)?.accountName}`,

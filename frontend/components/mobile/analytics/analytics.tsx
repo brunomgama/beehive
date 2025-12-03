@@ -27,6 +27,9 @@ interface CategoryData {
 }
 
 const CATEGORY_LABELS: Record<MovementCategory, string> = {
+  // Transfers
+  TRANSFER: 'Transfer',
+  
   // Housing
   RENT: 'Rent',
   PROPERTY_TAXES: 'Property Taxes',
@@ -138,6 +141,9 @@ const CATEGORY_LABELS: Record<MovementCategory, string> = {
 }
 
 const CATEGORY_COLORS: Record<MovementCategory, string> = {
+  // Transfers
+  TRANSFER: 'bg-slate-500',
+  
   // Housing
   RENT: 'bg-amber-600',
   PROPERTY_TAXES: 'bg-amber-700',
@@ -332,20 +338,21 @@ export function AnalyticsMobile() {
     const currentMovements = filterMovementsByRange(movements, dateRanges.current)
     const previousMovements = filterMovementsByRange(movements, dateRanges.previous)
     
+    // Exclude TRANSFER category from analytics
     const currentIncome = currentMovements
-      .filter(m => m.type === 'INCOME' && m.status === 'CONFIRMED')
+      .filter(m => m.type === 'INCOME' && m.status === 'CONFIRMED' && m.category !== 'TRANSFER')
       .reduce((sum, m) => sum + m.amount, 0)
     
     const currentExpenses = currentMovements
-      .filter(m => m.type === 'EXPENSE' && m.status === 'CONFIRMED')
+      .filter(m => m.type === 'EXPENSE' && m.status === 'CONFIRMED' && m.category !== 'TRANSFER')
       .reduce((sum, m) => sum + Math.abs(m.amount), 0)
     
     const previousIncome = previousMovements
-      .filter(m => m.type === 'INCOME' && m.status === 'CONFIRMED')
+      .filter(m => m.type === 'INCOME' && m.status === 'CONFIRMED' && m.category !== 'TRANSFER')
       .reduce((sum, m) => sum + m.amount, 0)
     
     const previousExpenses = previousMovements
-      .filter(m => m.type === 'EXPENSE' && m.status === 'CONFIRMED')
+      .filter(m => m.type === 'EXPENSE' && m.status === 'CONFIRMED' && m.category !== 'TRANSFER')
       .reduce((sum, m) => sum + Math.abs(m.amount), 0)
     
     const incomeChange = previousIncome > 0 

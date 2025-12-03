@@ -6,6 +6,9 @@ export type MovementType = 'EXPENSE' | 'INCOME'
 export type MovementStatus = 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'FAILED'
 export type MovementRecurrence = 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY' | 'CUSTOM'
 export type MovementCategory = 
+  // Transfers
+  | 'TRANSFER'
+  
   // Housing
   | 'RENT'
   | 'PROPERTY_TAXES'

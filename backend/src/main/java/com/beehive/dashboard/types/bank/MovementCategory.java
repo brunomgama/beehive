@@ -6,6 +6,9 @@ package com.beehive.dashboard.types.bank;
  * Typical usage includes assigning categories to movements and filtering transaction history.
  */
 public enum MovementCategory {
+    // Transfers (internal movements between accounts)
+    TRANSFER,
+    
     // Housing
     RENT,
     PROPERTY_TAXES,

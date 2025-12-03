@@ -5,6 +5,9 @@ import { BankAccount } from "./accounts-api"
 export type MovementType = 'EXPENSE' | 'INCOME'
 export type MovementStatus = 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'FAILED'
 export type MovementCategory = 
+  // Transfers
+  | 'TRANSFER'
+  
   // Housing
   | 'RENT'
   | 'PROPERTY_TAXES'
