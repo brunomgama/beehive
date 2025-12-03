@@ -272,7 +272,10 @@ if (typeof window !== 'undefined') {
 
 // Cache key builders for different data types
 export const CacheKeys = {
-  // Landing page cards
+  // Landing page - single endpoint
+  landingStats: (userId: number) => `landing:stats:${userId}`,
+  
+  // Legacy keys (can be removed after migration)
   totalBalance: (userId: number) => `landing:total-balance:${userId}`,
   monthIncome: (userId: number, year: number, month: number) => `landing:month-income:${userId}:${year}-${month}`,
   monthExpenses: (userId: number, year: number, month: number) => `landing:month-expenses:${userId}:${year}-${month}`,
@@ -285,7 +288,7 @@ export const CacheKeys = {
     monthDataForUser: (userId: number, year: number, month: number) => 
       new RegExp(`^landing:month.*:${userId}:${year}-${month}`),
     balanceRelated: (userId: number) => 
-      new RegExp(`^landing:(total-balance|balance-trend):${userId}`)
+      new RegExp(`^landing:(total-balance|balance-trend|stats):${userId}`)
   }
 }
 

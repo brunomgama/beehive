@@ -1,6 +1,7 @@
 package com.beehive.dashboard.service.bank;
 
 import com.beehive.dashboard.entity.bank.Account;
+import com.beehive.dashboard.entity.bank.Movement;
 import com.beehive.dashboard.entity.bank.Planned;
 import com.beehive.dashboard.repository.bank.AccountRepository;
 import com.beehive.dashboard.repository.bank.PlannedRepository;
@@ -338,5 +339,12 @@ public class PlannedService {
         accountRepository.save(account);
         logger.info("Account balance updated successfully for account ID: {} - New balance: {}",
             account.getId(), account.getBalance());
+    }
+
+    public List<Planned> getAllUsersPlannedMovementsBetweenDate(Long userId, LocalDate startDate, LocalDate endDate) {
+        return accountRepository.findByUserId(userId)
+                .stream().flatMap(account -> plannedRepository.findByAccountIdAndNextExecutionBetween(
+                        account.getId(), startDate, endDate).stream())
+                .toList();
     }
 }

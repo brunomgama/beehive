@@ -1,74 +1,21 @@
 'use client'
 
-import { useState, useEffect, useMemo } from "react"
+import { useMemo } from "react"
 import { ArrowUpRight, ArrowDownRight, TrendingUp, Wallet, Clock } from "lucide-react"
 import { useTheme } from "@/contexts/theme-context"
 import { useAuth } from "@/contexts/auth-context"
 import { getCardStyle, getThemeColors } from "@/lib/themes"
 import { XAxis, YAxis, Area, AreaChart } from "recharts"
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/line-chart"
-import { Movement, movementApi } from "@/lib/api/bank/movements-api"
-import { BankAccount, bankAccountApi } from "@/lib/api/bank/accounts-api"
-import { PlannedMovement, plannedMovementApi } from "@/lib/api/bank/planned-api"
 import { formatBalance } from "@/lib/util/converter"
-import { useTotalBalance } from "@/hooks/use-total-balance"
-import { useMonthIncome } from "@/hooks/use-month-income"
-import { useMonthExpenses } from "@/hooks/use-month-expenses"
-import { useUpcomingPlanned } from "@/hooks/use-upcoming-planned"
-import { useBalanceTrend } from "@/hooks/use-balance-trend"
+import { useLandingStats } from "@/hooks/use-landing-stats"
 
 export default function LandingMobile() {
   const { theme } = useTheme()
   const { user } = useAuth()
-  const [ movements, setMovements ] = useState<Movement[]>([])
-  const [ plannedMovements, setPlannedMovements ] = useState<PlannedMovement[]>([])
-  const [ accounts, setAccounts ] = useState<BankAccount[]>([])
-  const [ loading, setLoading ] = useState(true)
   
-  const { totalBalance } = useTotalBalance(user?.id)
-  const { monthIncome } = useMonthIncome(user?.id)
-  const { monthExpenses } = useMonthExpenses(user?.id)
-  const { upcomingPlanned: cachedUpcomingPlanned } = useUpcomingPlanned(user?.id)
-  const { balanceTrend: cachedBalanceTrend } = useBalanceTrend(user?.id)
-
-  useEffect(() => {
-    const fetchData = async () => {
-      if (!user?.id) return
-      
-      try {
-        setLoading(true)
-        const accountsResult = await bankAccountApi.getByUserId(user.id)
-        if (accountsResult.data) {
-          setAccounts(accountsResult.data)
-          
-          const allMovements: Movement[] = []
-          const allPlannedMovements: PlannedMovement[] = []
-          
-          for (const account of accountsResult.data) {
-            if (account.id) {
-              const movementsResult = await movementApi.getByAccountId(account.id)
-              if (movementsResult.data) {
-                allMovements.push(...movementsResult.data)
-              }
-              
-              const plannedResult = await plannedMovementApi.getByAccountId(account.id)
-              if (plannedResult.data) {
-                allPlannedMovements.push(...plannedResult.data)
-              }
-            }
-          }
-          setMovements(allMovements)
-          setPlannedMovements(allPlannedMovements)
-        }
-      } catch (error) {
-        console.error('Error fetching data:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchData()
-  }, [user?.id])
+  // Single hook to fetch all landing data
+  const { stats, loading, error } = useLandingStats(user?.id)
 
   const chartConfig = useMemo(() => ({
     balance: {
@@ -77,25 +24,18 @@ export default function LandingMobile() {
     },
   }), [theme]) satisfies ChartConfig
 
-  const stats = useMemo(() => {
-    const calculatedBalance = accounts.reduce((sum, acc) => sum + acc.balance, 0)
-    
-    return {
-      totalBalance: totalBalance ?? calculatedBalance,
-      monthIncome: monthIncome ?? 0,
-      monthExpenses: monthExpenses ?? 0
-    }
-  }, [accounts, totalBalance, monthIncome, monthExpenses])
-
-  const upcomingPlanned = cachedUpcomingPlanned ?? []
-  
   const plannedStats = useMemo(() => {
-    const totalIncome = upcomingPlanned.filter(pm => pm.type === 'INCOME').reduce((sum, pm) => sum + pm.amount, 0)
-    const totalExpenses = upcomingPlanned.filter(pm => pm.type === 'EXPENSE').reduce((sum, pm) => sum + Math.abs(pm.amount), 0)
-    return { totalIncome, totalExpenses, count: upcomingPlanned.length }
-  }, [upcomingPlanned])
-
-  const balanceTrend = cachedBalanceTrend ?? []
+    if (!stats?.upcomingPayments) return { totalIncome: 0, totalExpenses: 0 }
+    
+    const totalIncome = stats.upcomingPayments
+      .filter(pm => pm.type === 'INCOME')
+      .reduce((sum, pm) => sum + pm.amount, 0)
+    const totalExpenses = stats.upcomingPayments
+      .filter(pm => pm.type === 'EXPENSE')
+      .reduce((sum, pm) => sum + Math.abs(pm.amount), 0)
+    
+    return { totalIncome, totalExpenses }
+  }, [stats?.upcomingPayments])
 
   if (loading) {
     return (
@@ -104,7 +44,7 @@ export default function LandingMobile() {
           <h1 className="text-4xl font-bold text-foreground">Finance</h1>
         </div>
         <div className="px-6 space-y-6">
-          {[1, 2].map((i) => (
+          {[1, 2, 3].map((i) => (
             <div key={i} className="bg-card rounded-3xl p-6 shadow-sm border border-border animate-pulse">
               <div className="h-6 bg-muted rounded w-1/3 mb-4"></div>
               <div className="h-10 bg-muted rounded w-1/2"></div>
@@ -115,7 +55,7 @@ export default function LandingMobile() {
     )
   }
 
-  if (accounts.length === 0) {
+  if (error || !stats || stats.accountCount === 0) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-muted to-background pb-32">
         <div className="px-6 pt-8 pb-4">
@@ -137,18 +77,12 @@ export default function LandingMobile() {
       
       {/* Header */}
       <div className="px-6 pt-8 pb-4">
-        <div className="flex items-center justify-between mb-4">
-          <h1 className="text-4xl font-bold text-foreground">Finance</h1>
-        </div>
-
-        {/* Hero Text */}
+        <h1 className="text-4xl font-bold text-foreground">Finance</h1>
         <div className="mb-4">
           <h2 className="text-3xl font-bold text-foreground mb-2">
-            {stats.monthIncome >= stats.monthExpenses ? "You're on Track" : "Watch Spending"}
+            {stats.income >= stats.expenses ? "You're on Track" : "Watch Spending"}
           </h2>
-          <h3 className="text-3xl font-light text-muted-foreground">
-            this month
-          </h3>
+          <h3 className="text-3xl font-light text-muted-foreground">this month</h3>
         </div>
       </div>
 
@@ -160,23 +94,21 @@ export default function LandingMobile() {
             <p className="text-sm text-white/70">Total Balance</p>
           </div>
           <p className="text-4xl font-bold text-white mb-1">
-            {formatBalance(stats.totalBalance)}
+            {formatBalance(stats.balance)}
           </p>
           <p className="text-sm text-white/70">
-            across {accounts.length} account{accounts.length !== 1 ? 's' : ''}
+            across {stats.accountCount} account{stats.accountCount !== 1 ? 's' : ''}
           </p>
         </div>
       </div>
 
-      {/* Balance Trend Chart with Future Projection */}
+      {/* Balance Trend Chart */}
       <div className="px-6 mb-6">
         <div className="bg-card rounded-3xl p-5 shadow-sm border border-border">
-          <div className="flex items-center justify-between mb-4">
-            <p className="text-sm font-semibold text-foreground">Balance Trend</p>
-          </div>
+          <p className="text-sm font-semibold text-foreground mb-4">Balance Trend</p>
           
           <ChartContainer config={chartConfig} className="h-[10rem] w-full">
-            <AreaChart data={balanceTrend} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
+            <AreaChart data={stats.balanceTrend} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
               <defs>
                 <linearGradient id="actualGradient" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor={getThemeColors(theme).primary} stopOpacity={0.4} />
@@ -188,7 +120,7 @@ export default function LandingMobile() {
                 </linearGradient>
               </defs>
               <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} 
-              tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }} interval="preserveStartEnd" />
+                tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }} interval="preserveStartEnd" />
               <YAxis hide domain={['dataMin - 200', 'dataMax + 200']} />
               <ChartTooltip cursor={{ stroke: 'var(--border)', strokeWidth: 1, strokeDasharray: '5 5' }}
                 content={<ChartTooltipContent 
@@ -201,19 +133,18 @@ export default function LandingMobile() {
               
               {/* Actual Balance Area (Past + Today) */}
               <Area type="monotone" dataKey="actual" stroke={getThemeColors(theme).primary} 
-              strokeWidth={2.5} fill="url(#actualGradient)" connectNulls={false}/>
+                strokeWidth={2.5} fill="url(#actualGradient)" connectNulls={false}/>
               
               {/* Projected Balance Area (Today + Future) */}
               <Area type="monotone" dataKey="projected" stroke={getThemeColors(theme).primary} 
-              strokeWidth={2.5} strokeDasharray="6 4" fill="url(#projectedGradient)" connectNulls={false}/>
+                strokeWidth={2.5} strokeDasharray="6 4" fill="url(#projectedGradient)" connectNulls={false}/>
             </AreaChart>
           </ChartContainer>
-        
         </div>
       </div>
 
-      {/* Upcoming Planned Movements Card */}
-      {upcomingPlanned.length > 0 && (
+      {/* Upcoming Payments */}
+      {stats.upcomingPayments.length > 0 && (
         <div className="px-6 mb-6">
           <div className="bg-card rounded-3xl p-5 shadow-sm border border-border">
             <div className="flex items-center justify-between mb-4">
@@ -226,8 +157,8 @@ export default function LandingMobile() {
             
             <div className="pt-3 flex items-center justify-between">
               <span className="text-sm text-muted-foreground">Expected Impact</span>
-              <span className={`text-base font-bold ${plannedStats.totalIncome - plannedStats.totalExpenses >= 0 ? 'text-ok-foreground' : 'text-nok-foreground'}`}>
-                {plannedStats.totalIncome - plannedStats.totalExpenses >= 0 ? '+' : ''}{formatBalance(plannedStats.totalIncome - plannedStats.totalExpenses)}
+              <span className={`text-base font-bold ${stats.expectedImpact >= 0 ? 'text-ok-foreground' : 'text-nok-foreground'}`}>
+                {stats.expectedImpact >= 0 ? '+' : ''}{formatBalance(stats.expectedImpact)}
               </span>
             </div>
           </div>
@@ -237,8 +168,6 @@ export default function LandingMobile() {
       {/* Income & Expense Cards */}
       <div className="px-6 mb-8">
         <div className="grid grid-cols-2 gap-4">
-          
-          {/* Income Card */}
           <div className="bg-card rounded-3xl p-5 shadow-sm border border-border">
             <div className="flex items-center justify-between mb-3">
               <p className="text-sm text-muted-foreground">Income</p>
@@ -246,11 +175,10 @@ export default function LandingMobile() {
                 <ArrowUpRight size={16} className="text-ok-foreground" />
               </div>
             </div>
-            <p className="text-2xl font-bold text-foreground">{formatBalance(stats.monthIncome)}</p>
+            <p className="text-2xl font-bold text-foreground">{formatBalance(stats.income)}</p>
             <p className="text-xs text-muted-foreground mt-1">this month</p>
           </div>
 
-          {/* Expense Card */}
           <div className="bg-card rounded-3xl p-5 shadow-sm border border-border">
             <div className="flex items-center justify-between mb-3">
               <p className="text-sm text-muted-foreground">Expenses</p>
@@ -258,7 +186,7 @@ export default function LandingMobile() {
                 <ArrowDownRight size={16} className="text-nok-foreground" />
               </div>
             </div>
-            <p className="text-2xl font-bold text-foreground">{formatBalance(stats.monthExpenses)}</p>
+            <p className="text-2xl font-bold text-foreground">{formatBalance(stats.expenses)}</p>
             <p className="text-xs text-muted-foreground mt-1">this month</p>
           </div>
         </div>

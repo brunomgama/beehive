@@ -1,7 +1,16 @@
 package com.beehive.dashboard.service.bank;
 
+import com.beehive.dashboard.dto.bank.BalanceTrendPoint;
+import com.beehive.dashboard.dto.bank.LandingStatistics;
+import com.beehive.dashboard.dto.bank.UpcomingPayment;
 import com.beehive.dashboard.entity.bank.Account;
+import com.beehive.dashboard.entity.bank.Movement;
+import com.beehive.dashboard.entity.bank.Planned;
 import com.beehive.dashboard.repository.bank.AccountRepository;
+import com.beehive.dashboard.repository.bank.MovementRepository;
+import com.beehive.dashboard.repository.bank.PlannedRepository;
+import com.beehive.dashboard.types.bank.MovementStatus;
+import com.beehive.dashboard.types.bank.MovementType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,7 +18,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Service class for managing bank account business logic.
@@ -22,6 +37,12 @@ public class AccountService {
 
     @Autowired
     private AccountRepository accountRepository;
+
+    @Autowired
+    private MovementRepository movementRepository;
+
+    @Autowired
+    private PlannedRepository plannedRepository;
 
     /**
      * Creates a new bank account after validating IBAN uniqueness.
@@ -193,5 +214,152 @@ public class AccountService {
         logger.debug("Database query completed - returning count: {}", totalAccounts);
 
         return totalAccounts;
+    }
+
+    public LandingStatistics landingStatistics(Long userId) {
+        logger.info("Calculating landing statistics for user ID: {}", userId);
+
+        List<Account> accounts = accountRepository.findByUserId(userId);
+        if (accounts.isEmpty()) {
+            logger.warn("No accounts found for user ID: {}", userId);
+            return new LandingStatistics(0, 0, 0, 0, 0, new ArrayList<>(), new ArrayList<>());
+        }
+
+        int accountCount = accounts.size();
+        double totalBalance = accounts.stream().mapToDouble(Account::getBalance).sum();
+
+        LocalDate now = LocalDate.now();
+        LocalDate monthStart = now.withDayOfMonth(1);
+        LocalDate monthEnd = now.withDayOfMonth(now.lengthOfMonth());
+
+        List<Movement> allMovements = movementRepository.getAllUsersMovementsByGivenDate(userId, monthStart, monthEnd);
+        List<Planned> allPlanned = plannedRepository.getAllUsersPlannedMovementsByGivenDate(userId, monthStart, monthEnd);
+
+        double income = allMovements.stream()
+                .filter(m -> MovementType.INCOME.equals(m.getType()) && MovementStatus.CONFIRMED.equals(m.getStatus()))
+                .mapToDouble(Movement::getAmount).sum();
+
+        double expenses = allMovements.stream()
+                .filter(m -> MovementType.EXPENSE.equals(m.getType()) && MovementStatus.CONFIRMED.equals(m.getStatus()))
+                .mapToDouble(Movement::getAmount).sum();
+
+        double expectedImpact = allPlanned.stream()
+                .filter(p -> !MovementStatus.CANCELLED.equals(p.getStatus()) && !MovementStatus.FAILED.equals(p.getStatus()))
+                .mapToDouble(p -> MovementType.INCOME.equals(p.getType()) ? p.getAmount() : -p.getAmount()).sum();
+
+        List<BalanceTrendPoint> balanceTrend = calculateBalanceTrend(userId, totalBalance, accounts);
+
+        List<UpcomingPayment> upcomingPayments = getUpcomingPayments(userId, now);
+
+        logger.info("Landing statistics calculated - Balance: {}, Income: {}, Expenses: {}, Expected Impact: {}",
+                totalBalance, income, expenses, expectedImpact);
+
+        return new LandingStatistics(totalBalance, income, expenses, expectedImpact, accountCount, balanceTrend, upcomingPayments);
+    }
+
+    private List<BalanceTrendPoint> calculateBalanceTrend(Long userId, double currentBalance, List<Account> accounts) {
+        logger.debug("Calculating balance trend for user ID: {}", userId);
+
+        LocalDate now = LocalDate.now();
+        LocalDate startDate = now.minusDays(14);
+        LocalDate endDate = now.plusDays(14);
+
+        List<Movement> allMovements = movementRepository.getAllUsersMovementsByGivenDate(userId, startDate, endDate);
+        List<Planned> allPlanned = plannedRepository.getAllUsersPlannedMovementsByGivenDate(userId, startDate, endDate);
+
+        List<Movement> confirmedMovements = allMovements.stream()
+                .filter(m -> MovementStatus.CONFIRMED.equals(m.getStatus())).collect(Collectors.toList());
+
+        List<Planned> activePlanned = allPlanned.stream()
+                .filter(p -> !MovementStatus.CANCELLED.equals(p.getStatus()) && !MovementStatus.FAILED.equals(p.getStatus()))
+                .collect(Collectors.toList());
+
+        DateTimeFormatter labelFormatter = DateTimeFormatter.ofPattern("MMM d");
+        DateTimeFormatter fullFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+        List<BalanceTrendPoint> trend = new ArrayList<>();
+
+        for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1)) {
+            String dateLabel = date.format(labelFormatter);
+            String fullDate = date.format(fullFormatter);
+            boolean isToday = date.isEqual(now);
+            boolean isFuture = date.isAfter(now);
+
+            double dayBalance = currentBalance;
+
+            if (!isFuture && !isToday) {
+                // Calculate past balance by removing movements between date and now
+                for (Movement m : confirmedMovements) {
+                    if (m.getDate().isAfter(date) && !m.getDate().isAfter(now)) {
+                        if (MovementType.INCOME.equals(m.getType())) {
+                            dayBalance -= m.getAmount();
+                        } else {
+                            dayBalance += m.getAmount();
+                        }
+                    }
+                }
+            } else if (isFuture) {
+                // Calculate future balance by adding movements and planned between now and date
+                for (Movement m : confirmedMovements) {
+                    if (m.getDate().isAfter(now) && !m.getDate().isAfter(date)) {
+                        if (MovementType.INCOME.equals(m.getType())) {
+                            dayBalance += m.getAmount();
+                        } else {
+                            dayBalance -= m.getAmount();
+                        }
+                    }
+                }
+
+                for (Planned p : activePlanned) {
+                    if (p.getNextExecution().isAfter(now) && !p.getNextExecution().isAfter(date)) {
+                        if (MovementType.INCOME.equals(p.getType())) {
+                            dayBalance += p.getAmount();
+                        } else {
+                            dayBalance -= p.getAmount();
+                        }
+                    }
+                }
+            }
+
+            BalanceTrendPoint point = new BalanceTrendPoint(
+                    dateLabel,
+                    fullDate,
+                    !isFuture ? dayBalance : null,
+                    isFuture || isToday ? dayBalance : null,
+                    isToday,
+                    isFuture
+            );
+
+            trend.add(point);
+        }
+
+        logger.debug("Balance trend calculated with {} data points", trend.size());
+        return trend;
+    }
+
+    private List<UpcomingPayment> getUpcomingPayments(Long userId, LocalDate now) {
+        logger.debug("Fetching upcoming payments for user ID: {}", userId);
+
+        LocalDate futureDate = now.plusDays(30);
+
+        List<Planned> upcomingPlanned = plannedRepository.getAllUsersPlannedMovementsByGivenDate(userId, now, futureDate);
+
+        List<UpcomingPayment> payments = upcomingPlanned.stream()
+                .filter(p -> !MovementStatus.CANCELLED.equals(p.getStatus()) && !MovementStatus.FAILED.equals(p.getStatus()))
+                .filter(p -> p.getNextExecution().isAfter(now))
+                .sorted((a, b) -> a.getNextExecution().compareTo(b.getNextExecution()))
+                .limit(10)
+                .map(p -> new UpcomingPayment(
+                        p.getId(),
+                        p.getDescription(),
+                        p.getAmount(),
+                        p.getType().toString(),
+                        p.getNextExecution().toString(),
+                        p.getCategory() != null ? p.getCategory().toString() : "OTHER"
+                ))
+                .collect(Collectors.toList());
+
+        logger.debug("Found {} upcoming payments", payments.size());
+        return payments;
     }
 }

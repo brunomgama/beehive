@@ -1,5 +1,6 @@
 package com.beehive.dashboard.controller.bank;
 
+import com.beehive.dashboard.dto.bank.LandingStatistics;
 import com.beehive.dashboard.entity.bank.Account;
 import com.beehive.dashboard.service.bank.AccountService;
 import jakarta.validation.Valid;
@@ -177,5 +178,14 @@ public class AccountController {
         logger.debug("Returning account count: {}", count);
 
         return ResponseEntity.status(HttpStatus.OK).body(Map.of("count", count));
+    }
+
+    @GetMapping("/landing/{userId}")
+    public ResponseEntity<LandingStatistics> landingStatistics(@PathVariable Long userId) {
+        logger.info("Request to get landing page statistics");
+
+        LandingStatistics landingStatistics = accountService.landingStatistics(userId);
+
+        return ResponseEntity.status(HttpStatus.OK).body(landingStatistics);
     }
 }

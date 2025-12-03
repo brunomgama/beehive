@@ -4,6 +4,8 @@ import com.beehive.dashboard.entity.bank.Movement;
 import com.beehive.dashboard.types.bank.MovementStatus;
 import com.beehive.dashboard.types.bank.MovementType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
@@ -63,4 +65,19 @@ public interface MovementRepository extends JpaRepository<Movement, Long> {
      * @return a list of {@link Movement} entities ordered by date descending
      */
     List<Movement> findByAccountIdOrderByDateDesc(Long accountId);
+
+    /**
+     * Finds all movements for all accounts belonging to a user within a specific date range.
+     *
+     * @param userId the user ID whose accounts to search
+     * @param startDate the start date of the range (inclusive)
+     * @param endDate the end date of the range (inclusive)
+     * @return a list of {@link Movement} entities within the date range for all user accounts
+     */
+    @Query("SELECT m FROM Movement m WHERE m.accountId IN " +
+           "(SELECT a.id FROM Account a WHERE a.userId = :userId) " +
+           "AND m.date BETWEEN :startDate AND :endDate")
+    List<Movement> getAllUsersMovementsByGivenDate(@Param("userId") Long userId, 
+                                                     @Param("startDate") LocalDate startDate, 
+                                                     @Param("endDate") LocalDate endDate);
 }

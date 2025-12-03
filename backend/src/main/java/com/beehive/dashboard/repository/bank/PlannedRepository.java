@@ -1,9 +1,12 @@
 package com.beehive.dashboard.repository.bank;
 
+import com.beehive.dashboard.entity.bank.Movement;
 import com.beehive.dashboard.entity.bank.Planned;
 import com.beehive.dashboard.types.bank.MovementStatus;
 import com.beehive.dashboard.types.bank.MovementType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
@@ -63,4 +66,19 @@ public interface PlannedRepository extends JpaRepository<Planned, Long> {
      * @return a list of {@link Planned} entities ordered by date descending
      */
     List<Planned> findByAccountIdOrderByNextExecutionDesc(Long accountId);
+
+    /**
+     * Finds all planned movements for all accounts belonging to a user within a specific date range.
+     *
+     * @param userId the user ID whose accounts to search
+     * @param startDate the start date of the range (inclusive)
+     * @param endDate the end date of the range (inclusive)
+     * @return a list of {@link Planned} entities within the date range for all user accounts
+     */
+    @Query("SELECT p FROM Planned p WHERE p.accountId IN " +
+           "(SELECT a.id FROM Account a WHERE a.userId = :userId) " +
+           "AND p.nextExecution BETWEEN :startDate AND :endDate")
+    List<Planned> getAllUsersPlannedMovementsByGivenDate(@Param("userId") Long userId, 
+                                                           @Param("startDate") LocalDate startDate, 
+                                                           @Param("endDate") LocalDate endDate);
 }
