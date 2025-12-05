@@ -2,16 +2,17 @@
 
 import { User } from "@/lib/api/auth/auth-api"
 import { useEffect, useState } from "react"
-import { Plus, Repeat, TrendingUp, Wallet } from "lucide-react"
+import { ClockFading, Plus, Repeat, Wallet } from "lucide-react"
 import { useAccount } from "./account_context"
 import { AddMovementDrawer } from "./add_movement"
 import { AddTransferDrawer } from "./add_transfer"
+import { AddPlannedDrawer } from "./add_planned"
 import { useTheme } from "@/contexts/theme-context"
 import { BankAccount, bankAccountApi } from "@/lib/api/bank/accounts-api"
 import { getCardGradient } from "@/lib/util/credit_card"
 import { formatBalance } from "@/lib/util/converter"
 import { Button } from "@/components/ui/button"
-import { getThemeButtonStyle, getButtonStyle } from "@/lib/themes"
+import { getButtonStyle } from "@/lib/themes"
 
 export function CardsCarousel({user}: {user: User}) {
     const { theme } = useTheme()
@@ -21,6 +22,7 @@ export function CardsCarousel({user}: {user: User}) {
     const [touchStart, setTouchStart] = useState<number>(0)
     const [drawerMovementOpen, setMovementDrawerOpen] = useState(false)
     const [drawerTransferOpen, setTransferDrawerOpen] = useState(false)
+    const [drawerPlannedOpen, setPlannedDrawerOpen] = useState(false)
     const { setActiveAccountId } = useAccount()
 
     useEffect(() => {
@@ -163,23 +165,29 @@ export function CardsCarousel({user}: {user: User}) {
 
             {/* Quick Actions */}
             <div className="px-6">
-                <div className="grid grid-cols-2 gap-4">
-                    <Button onClick={() => setMovementDrawerOpen(true)} 
-                        className={`rounded-2xl p-7 shadow-sm flex items-center gap-4 hover:shadow-md transition-all duration-300 ${getButtonStyle(theme)}`}>
+                <div className="flex gap-4">
+                    {/* Add Transaction Button */}
+                    <Button onClick={() => setMovementDrawerOpen(true)} className={`flex-1 rounded-2xl py-5 px-4 shadow-sm flex items-center gap-3 
+                        hover:shadow-md transition-all duration-300 ${getButtonStyle(theme)}`}>
                         <Plus size={24} className={`${getButtonStyle(theme)}`} />
                         <div className="text-left">
-                            <p className={`text-sm font-semibold ${getButtonStyle(theme)}`}>Add</p>
-                            <p className={`text-xs opacity-70 ${getButtonStyle(theme)}`}>Transaction</p>
+                            <p className={`text-sm font-semibold ${getButtonStyle(theme)}`}>Movement</p>
                         </div>
                     </Button>
 
-                    <Button onClick={() => setTransferDrawerOpen(true)} 
-                        className={`rounded-2xl p-7 shadow-sm flex items-center gap-4 hover:shadow-md transition-all duration-300 ${getButtonStyle(theme)}`}>
+                    {/* Transfer Button */}
+                    <Button onClick={() => setTransferDrawerOpen(true)} className={`flex-1 rounded-2xl py-5 px-4 shadow-sm flex items-center gap-3 
+                        hover:shadow-md transition-all duration-300 ${getButtonStyle(theme)}`}>
                         <Repeat size={24} className={`${getButtonStyle(theme)}`} />
                         <div className="text-left">
                             <p className={`text-sm font-semibold ${getButtonStyle(theme)}`}>Transfer</p>
-                            <p className={`text-xs opacity-70 ${getButtonStyle(theme)}`}>Between Accounts</p>
                         </div>
+                    </Button>
+
+                    {/* Small Icon-only Button */}
+                    <Button onClick={() => setPlannedDrawerOpen(true)} className={`w-16 rounded-2xl py-5 shadow-sm flex items-center justify-center 
+                        hover:shadow-md transition-all duration-300 ${getButtonStyle(theme)}`}>
+                        <ClockFading size={24} className={`${getButtonStyle(theme)}`} />
                     </Button>
                 </div>
             </div>
@@ -188,6 +196,9 @@ export function CardsCarousel({user}: {user: User}) {
             accounts={accounts} defaultAccountId={accounts[activeIndex]?.id} onSuccess={handleMovementSuccess}/>
 
             <AddTransferDrawer open={drawerTransferOpen} onOpenChange={setTransferDrawerOpen} 
+            accounts={accounts} defaultAccountId={accounts[activeIndex]?.id} onSuccess={handleMovementSuccess}/>
+
+            <AddPlannedDrawer open={drawerPlannedOpen} onOpenChange={setPlannedDrawerOpen} 
             accounts={accounts} defaultAccountId={accounts[activeIndex]?.id} onSuccess={handleMovementSuccess}/>
         </div>
     )

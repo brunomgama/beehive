@@ -109,10 +109,11 @@ export default function LandingMobile() {
                 tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }} interval="preserveStartEnd" />
               <YAxis hide domain={['dataMin - 200', 'dataMax + 200']} />
               <ChartTooltip cursor={{ stroke: 'var(--border)', strokeWidth: 1, strokeDasharray: '5 5' }}
-                content={<ChartTooltipContent 
+                content={
+                <ChartTooltipContent 
                   hideLabel 
                   formatter={(value, name) => {
-                    return [`${formatBalance(value as number)}`, name === 'actual' ? 'Current' : 'Projected']
+                    return [`${formatBalance(value as number)}`, name === 'actual' ? ' Current' : ' Projected']
                   }}
                 />} 
               />

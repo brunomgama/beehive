@@ -1,8 +1,10 @@
 package com.beehive.dashboard.controller.bank;
 
+import com.beehive.dashboard.dto.bank.AnalyticsStatistics;
 import com.beehive.dashboard.dto.bank.LandingStatistics;
 import com.beehive.dashboard.entity.bank.Account;
 import com.beehive.dashboard.service.bank.AccountService;
+import com.beehive.dashboard.service.bank.AnalyticsService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,6 +28,9 @@ public class AccountController {
 
     @Autowired
     private AccountService accountService;
+
+    @Autowired
+    private AnalyticsService analyticsService;
 
     /**
      * Creates a new bank account in the system.
@@ -180,12 +185,43 @@ public class AccountController {
         return ResponseEntity.status(HttpStatus.OK).body(Map.of("count", count));
     }
 
+    /**
+     * Retrieves comprehensive landing page statistics for a user.
+     * Includes balance, income, expenses, account count, balance trend, and upcoming payments.
+     *
+     * @param userId The unique identifier of the user
+     * @return ResponseEntity containing landing page statistics
+     */
     @GetMapping("/landing/{userId}")
     public ResponseEntity<LandingStatistics> landingStatistics(@PathVariable Long userId) {
-        logger.info("Request to get landing page statistics");
+        logger.info("Request to get landing page statistics for user ID: {}", userId);
 
         LandingStatistics landingStatistics = accountService.landingStatistics(userId);
 
         return ResponseEntity.status(HttpStatus.OK).body(landingStatistics);
+    }
+
+    /**
+     * Retrieves comprehensive analytics statistics for a user based on time filter.
+     *
+     * @param userId     The unique identifier of the user
+     * @param timeFilter Time period filter: "day", "week", "month", or "year" (defaults to "month")
+     * @return ResponseEntity containing analytics statistics including income/expense data, 
+     *         chart data points, and category breakdown
+     */
+    @GetMapping("/analytics/{userId}")
+    public ResponseEntity<AnalyticsStatistics> analyticsStatistics(
+            @PathVariable Long userId,
+            @RequestParam(defaultValue = "month") String timeFilter) {
+        logger.info("Request to get analytics statistics for user ID: {} with filter: {}", userId, timeFilter);
+
+        try {
+            AnalyticsStatistics analyticsStats = analyticsService.calculateAnalytics(userId, timeFilter);
+            logger.info("Successfully calculated analytics for user ID: {} with filter: {}", userId, timeFilter);
+            return ResponseEntity.status(HttpStatus.OK).body(analyticsStats);
+        } catch (RuntimeException e) {
+            logger.error("Failed to calculate analytics for user ID: {} - Error: {}", userId, e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 }

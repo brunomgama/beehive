@@ -78,7 +78,6 @@ public interface PlannedRepository extends JpaRepository<Planned, Long> {
     @Query("SELECT p FROM Planned p WHERE p.accountId IN " +
            "(SELECT a.id FROM Account a WHERE a.userId = :userId) " +
            "AND p.nextExecution BETWEEN :startDate AND :endDate")
-    List<Planned> getAllUsersPlannedMovementsByGivenDate(@Param("userId") Long userId, 
-                                                           @Param("startDate") LocalDate startDate, 
+    List<Planned> getAllUsersPlannedMovementsByGivenDate(@Param("userId") Long userId, @Param("startDate") LocalDate startDate, 
                                                            @Param("endDate") LocalDate endDate);
 }
