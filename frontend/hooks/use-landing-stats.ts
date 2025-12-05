@@ -23,6 +23,7 @@ export interface UpcomingPayment {
 
 export interface LandingStats {
   balance: number
+  availableBalance: number
   income: number
   expenses: number
   expectedImpact: number

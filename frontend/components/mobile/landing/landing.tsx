@@ -1,7 +1,7 @@
 'use client'
 
-import { useMemo } from "react"
-import { ArrowUpRight, ArrowDownRight, TrendingUp, Wallet, Clock } from "lucide-react"
+import { useMemo, useState } from "react"
+import { ArrowUpRight, ArrowDownRight, TrendingUp, Wallet, Clock, RefreshCw } from "lucide-react"
 import { useTheme } from "@/contexts/theme-context"
 import { useAuth } from "@/contexts/auth-context"
 import { getCardStyle, getThemeColors } from "@/lib/themes"
@@ -13,8 +13,22 @@ import { useLandingStats } from "@/hooks/use-landing-stats"
 export default function LandingMobile() {
   const { theme } = useTheme()
   const { user } = useAuth()
+  const [isRefreshing, setIsRefreshing] = useState(false)
   
   const { stats, loading, error } = useLandingStats(user?.id)
+
+  const handleRefresh = async () => {
+    if (!user?.id || isRefreshing) return
+    
+    setIsRefreshing(true)
+    
+    const { dataCache, CacheKeys } = await import('@/lib/util/cache')
+    dataCache.invalidate(CacheKeys.landingStats(user.id))
+    
+    setTimeout(() => {
+      window.location.reload()
+    }, 300)
+  }
 
   const chartConfig = useMemo(() => ({
     balance: {
@@ -74,7 +88,7 @@ export default function LandingMobile() {
 
       {/* Total Balance Card */}
       <div className="px-6 mb-6">
-        <div className={`p-6 shadow-lg ${getCardStyle(theme)}`}>
+        <div className={`p-6 shadow-lg ${getCardStyle(theme)} relative`}>
           <div className="flex items-center gap-2 mb-2">
             <TrendingUp size={20} className="text-white/70" />
             <p className="text-sm text-white/70">Total Balance</p>
@@ -82,9 +96,32 @@ export default function LandingMobile() {
           <p className="text-4xl font-bold text-white mb-1">
             {formatBalance(stats.balance)}
           </p>
-          <p className="text-sm text-white/70">
+          <p className="text-sm text-white/70 mb-3">
             across {stats.accountCount} account{stats.accountCount !== 1 ? 's' : ''}
           </p>
+          
+          {/* Available Balance */}
+          <div className="pt-3 border-t border-white/20">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-white/70">Available to Use</span>
+              <span className="text-lg font-semibold text-white">
+                {formatBalance(stats.availableBalance)}
+              </span>
+            </div>
+          </div>
+          
+          {/* Refresh Button */}
+          <button
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            className="absolute top-4 right-4 p-2 bg-white/10 hover:bg-white/20 rounded-full transition-all duration-200 disabled:opacity-50"
+            aria-label="Refresh data"
+          >
+            <RefreshCw 
+              size={18} 
+              className={`text-white ${isRefreshing ? 'animate-spin' : ''}`} 
+            />
+          </button>
         </div>
       </div>
 

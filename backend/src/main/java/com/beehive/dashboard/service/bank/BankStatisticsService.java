@@ -44,11 +44,11 @@ public class BankStatisticsService {
 
         if (accounts.isEmpty()) {
             logger.warn("No accounts found for user ID: {}", userId);
-            return new LandingStatistics(0, 0, 0, 0, 0, new ArrayList<>(), new ArrayList<>());
+            return new LandingStatistics(0, 0, 0, 0, 0, 0, new ArrayList<>(), new ArrayList<>());
         }
 
         int accountCount = accounts.size();
-        double totalBalance = accounts.stream().mapToDouble(Account::getBalance).sum();
+        double accountBalance = accounts.stream().mapToDouble(Account::getBalance).sum();
 
         LocalDate now = LocalDate.now();
         LocalDate monthStart = now.withDayOfMonth(1);
@@ -58,13 +58,16 @@ public class BankStatisticsService {
         double expenses = calculateMonthlyExpenses(userId, monthStart, monthEnd);
         double expectedImpact = calculateExpectedImpact(userId, monthStart, monthEnd);
 
-        List<BalanceTrendPoint> balanceTrend = calculateBalanceTrend(userId, totalBalance);
+        // Calculate available balance: current balance - future movements - planned movements
+        double availableBalance = calculateAvailableBalance(userId, accountBalance, now, monthEnd);
+
+        List<BalanceTrendPoint> balanceTrend = calculateBalanceTrend(userId, accountBalance);
         List<UpcomingPayment> upcomingPayments = getUpcomingPayments(userId, now);
 
-        logger.info("Landing statistics calculated - Balance: {}, Income: {}, Expenses: {}", 
-                   totalBalance, income, expenses);
+        logger.info("Landing statistics calculated - Balance: {}, Available: {}, Income: {}, Expenses: {}", 
+                   accountBalance, availableBalance, income, expenses);
 
-        return new LandingStatistics(totalBalance, income, expenses, expectedImpact, accountCount, balanceTrend, upcomingPayments);
+        return new LandingStatistics(accountBalance, availableBalance, income, expenses, expectedImpact, accountCount, balanceTrend, upcomingPayments);
     }
 
     /**
@@ -242,5 +245,37 @@ public class BankStatisticsService {
 
         logger.debug("Found {} upcoming payments", payments.size());
         return payments;
+    }
+
+    /**
+     * Calculate available balance by subtracting future movements and planned transactions.
+     * Available balance = current balance - future confirmed movements - active planned movements
+     */
+    private double calculateAvailableBalance(Long userId, double currentBalance, LocalDate startDate, LocalDate endDate) {
+        logger.debug("Calculating available balance for user ID: {}", userId);
+
+        LocalDate tomorrow = startDate.plusDays(1);
+        List<Movement> futureMovements = movementRepository.getAllUsersMovementsByGivenDate(userId, tomorrow, endDate);
+        
+        double futureMovementsImpact = futureMovements.stream()
+                .filter(m -> MovementStatus.CONFIRMED.equals(m.getStatus()))
+                .mapToDouble(m -> MovementType.INCOME.equals(m.getType()) ? m.getAmount() : -m.getAmount())
+                .sum();
+
+        List<Planned> plannedMovements = plannedRepository.getAllUsersPlannedMovementsByGivenDate(userId, startDate, endDate);
+        
+        double plannedImpact = plannedMovements.stream()
+                .filter(p -> !MovementStatus.CANCELLED.equals(p.getStatus()) 
+                          && !MovementStatus.FAILED.equals(p.getStatus()))
+                .filter(p -> p.getNextExecution().isAfter(startDate))
+                .mapToDouble(p -> MovementType.INCOME.equals(p.getType()) ? p.getAmount() : -p.getAmount())
+                .sum();
+
+        double availableBalance = currentBalance - futureMovementsImpact - plannedImpact;
+
+        logger.debug("Available balance calculation - Current: {}, Future movements: {}, Planned: {}, Available: {}", 
+                    currentBalance, futureMovementsImpact, plannedImpact, availableBalance);
+
+        return availableBalance;
     }
 }

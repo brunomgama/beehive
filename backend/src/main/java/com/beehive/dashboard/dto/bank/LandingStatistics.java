@@ -5,6 +5,7 @@ import java.util.List;
 public class LandingStatistics {
 
     private double balance;
+    private double availableBalance;
     private double income;
     private double expenses;
     private double expectedImpact;
@@ -15,10 +16,11 @@ public class LandingStatistics {
     public LandingStatistics() {
     }
 
-    public LandingStatistics(double balance, double income, double expenses, double expectedImpact,
+    public LandingStatistics(double balance, double availableBalance, double income, double expenses, double expectedImpact,
                            int accountCount, List<BalanceTrendPoint> balanceTrend,
                            List<UpcomingPayment> upcomingPayments) {
         this.balance = balance;
+        this.availableBalance = availableBalance;
         this.income = income;
         this.expenses = expenses;
         this.expectedImpact = expectedImpact;
@@ -33,6 +35,14 @@ public class LandingStatistics {
 
     public void setBalance(double balance) {
         this.balance = balance;
+    }
+
+    public double getAvailableBalance() {
+        return availableBalance;
+    }
+
+    public void setAvailableBalance(double availableBalance) {
+        this.availableBalance = availableBalance;
     }
 
     public double getIncome() {
