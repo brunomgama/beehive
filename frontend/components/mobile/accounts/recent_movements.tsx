@@ -10,6 +10,7 @@ import { getMovementIcon } from "@/lib/util/movement-icons"
 import Image from "next/image"
 import { Movement, movementApi } from "@/lib/api/bank/movements-api"
 import { formatBalance } from "@/lib/util/converter"
+import { useRouter } from "next/navigation"
 
 const formatCategoryLabel = (category: string): string => {
   return category
@@ -20,9 +21,9 @@ const formatCategoryLabel = (category: string): string => {
 
 export function RecentMovements() {
   const { theme } = useTheme()
+  const router = useRouter()
   const [movements, setMovements] = useState<Movement[]>([])
   const [loading, setLoading] = useState(true)
-  const [refreshKey, setRefreshKey] = useState(0)
   const { activeAccountId } = useAccount()
 
   useEffect(() => {
@@ -77,7 +78,7 @@ export function RecentMovements() {
   if (loading) {
     return (
       <div className="px-6 mt-4">
-        <h3 className="text-2xl font-bold text-foreground mb-4">Recent Activity</h3>
+        <h3 className="text-2xl font-semibold text-foreground mb-4">Recent Activity</h3>
         <div className="bg-card rounded-3xl p-4 shadow-sm border border-border">
           <div className="space-y-3">
             {[1, 2, 3].map((i) => (
@@ -99,7 +100,7 @@ export function RecentMovements() {
   if (movements.length === 0) {
     return (
       <div className="px-6 mt-8">
-        <h3 className="text-2xl font-bold text-foreground mb-4">Recent Activity</h3>
+        <h3 className="text-2xl font-semibold text-foreground mb-4">Recent Activity</h3>
         <div className="bg-card rounded-3xl p-8 shadow-sm border border-border text-center">
           <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-3">
             <MoreHorizontal className="w-8 h-8 text-muted-foreground" />
@@ -113,8 +114,9 @@ export function RecentMovements() {
   return (
     <div className="px-6 mt-2">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-2xl font-bold text-foreground">Recent Activity</h3>
-        <button className={`text-sm font-medium transition-all duration-300 ${getThemeButtonStyle(theme, 'navIndicator')} bg-clip-text text-transparent`}>
+        <h3 className="text-2xl font-semibold text-foreground">Recent Activity</h3>
+        <button className={`text-sm font-medium transition-all duration-300 ${getThemeButtonStyle(theme, 'navIndicator')} bg-clip-text text-transparent`}
+          onClick={() => router.push('/movements')}>
           See all
         </button>
       </div>
@@ -145,7 +147,7 @@ export function RecentMovements() {
                 )}
                 
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-foreground truncate">
+                  <p className="text-sm font-medium text-foreground truncate">
                     {movement.description}
                   </p>
                   <p className="text-xs text-muted-foreground">
@@ -154,7 +156,7 @@ export function RecentMovements() {
                 </div>
                 
                 <div className="text-right">
-                  <p className={`text-base font-bold ${
+                  <p className={`text-base font-semibold ${
                     movement.type === 'INCOME' ? 'text-ok' : 'text-foreground'
                   }`}>
                     {movement.type === 'INCOME' ? '+' : '-'}{formatBalance(Math.abs(movement.amount))}

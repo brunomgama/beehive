@@ -1,6 +1,7 @@
 'use client'
 
 import PlannedMovementsDesktop from '@/components/desktop/planned/planned'
+import PlannedMovementsMobile from '@/components/mobile/planned/planned'
 import { useIsMobile } from '@/hooks/use-mobile'
 
 export default function PlannedPage() {
@@ -9,7 +10,7 @@ export default function PlannedPage() {
   return (
     <>
       {isMobile ? (
-        <></>
+        <PlannedMovementsMobile />
       ) : (
         <PlannedMovementsDesktop />
       )}

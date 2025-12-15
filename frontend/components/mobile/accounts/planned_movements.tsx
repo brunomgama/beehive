@@ -10,10 +10,12 @@ import { getMovementIcon } from "@/lib/util/movement-icons"
 import Image from "next/image"
 import { PlannedMovement, plannedMovementApi } from "@/lib/api/bank/planned-api"
 import { formatBalance } from "@/lib/util/converter"
+import { useRouter } from "next/navigation"
 
 export function PlannedMovements() {
   const { theme } = useTheme()
   const [movements, setMovements] = useState<PlannedMovement[]>([])
+  const router = useRouter()
   const [loading, setLoading] = useState(true)
   const { activeAccountId } = useAccount()
 
@@ -91,7 +93,8 @@ export function PlannedMovements() {
     <div className="px-6 mt-8 mb-6">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-2xl font-bold text-foreground">Upcoming</h3>
-        <button className={`text-sm font-medium transition-all duration-300 ${getThemeButtonStyle(theme, 'navIndicator')} bg-clip-text text-transparent`}>
+        <button className={`text-sm font-medium transition-all duration-300 ${getThemeButtonStyle(theme, 'navIndicator')} bg-clip-text text-transparent`}
+        onClick={() => router.push('/planned')}>
           See all
         </button>
       </div>
