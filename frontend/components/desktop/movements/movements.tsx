@@ -12,10 +12,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFoo
 import { Movement, movementApi } from "@/lib/api/bank/movements-api"
 import { BankAccount, bankAccountApi } from "@/lib/api/bank/accounts-api"
 import { formatBalance } from "@/lib/util/converter"
+import { useTheme } from "@/contexts/theme-context"
+import { getButtonStyle } from "@/lib/themes"
 
 export default function MovementsDesktop() {
   const { user } = useAuth()
   const router = useRouter()
+  const { theme } = useTheme()
   const [movements, setMovements] = useState<Movement[]>([])
   const [accounts, setAccounts] = useState<BankAccount[]>([])
   const [loading, setLoading] = useState(true)
@@ -107,10 +110,8 @@ export default function MovementsDesktop() {
             </p>
           </div>
           
-          <Button
-            onClick={() => router.push('/bank/movements/new')}
-            className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-white font-semibold shadow-lg hover:shadow-xl transition-all"
-          >
+          <Button onClick={() => router.push('/movements/add')} className={`flex items-center gap-2 px-6 py-3 rounded-2xl 
+            ${getButtonStyle(theme)} font-semibold shadow-lg hover:shadow-xl transition-all`}>
             <Plus size={20} />
             New Transaction
           </Button>
@@ -193,7 +194,7 @@ export default function MovementsDesktop() {
           </DropdownMenu>
 
           {/* Search Button */}
-          <Button size="icon" className="rounded-full bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-white">
+          <Button size="icon" className={`rounded-full bg-gradient-to-r from-amber-400 ${getButtonStyle(theme)}`}>
             <Search size={20} />
           </Button>
         </div>

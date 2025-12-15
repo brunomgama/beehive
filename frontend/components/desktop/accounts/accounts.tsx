@@ -1,22 +1,23 @@
 'use client'
 
 import { useState, useEffect } from "react"
-import { Plus, MoreVertical, Edit2, Trash2, TrendingUp } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { Plus, Edit2, Trash2, TrendingUp } from "lucide-react"
 import { useAuth } from "@/contexts/auth-context"
 import { getCardGradient } from "@/lib/util/credit_card"
 import { Button } from "@/components/ui/button"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from "@/components/ui/dropdown-menu"
 import { formatBalance } from "@/lib/util/converter"
 import { BankAccount, bankAccountApi } from "@/lib/api/bank/accounts-api"
 import { getButtonStyle } from "@/lib/themes"
 import { useTheme } from "@/contexts/theme-context"
 
 export default function AccountsDesktop() {
+  const router = useRouter()
   const { user } = useAuth()
   const [accounts, setAccounts] = useState<BankAccount[]>([])
   const [loading, setLoading] = useState(true)
   const [hoveredCard, setHoveredCard] = useState<number | null>(null)
-  const { setTheme, theme } = useTheme()
+  const { theme } = useTheme()
 
   useEffect(() => {
     fetchAccounts()
@@ -52,11 +53,11 @@ export default function AccountsDesktop() {
   }
 
   const handleEdit = (accountId: number) => {
-    console.log('Edit account:', accountId)
+    router.push(`/accounts/edit?id=${accountId}`)
   }
 
   const handleCreate = () => {
-    console.log('Create new account')
+    router.push('/accounts/add')
   }
 
   if (loading) {
@@ -86,19 +87,12 @@ export default function AccountsDesktop() {
               Manage your {accounts.length} bank account{accounts.length !== 1 ? 's' : ''}
             </p>
           </div>
-          
-          {/* Add Account Button */}
-          <Button onClick={handleCreate} className={`h-14 ${getButtonStyle(theme)} font-bold text-base rounded-full shadow-lg
-            hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 group relative overflow-hidden`}>
-            Add Account
-          </Button>
         </div>
 
         {/* Accounts Grid - 4 per row */}
         <div className="grid grid-cols-4 gap-6">
           {accounts.map((account) => (
-            <div key={account.id} className="group relative" onMouseEnter={() => setHoveredCard(account.id || null)} 
-            onMouseLeave={() => setHoveredCard(null)}>
+            <div key={account.id} className="group relative" onMouseEnter={() => setHoveredCard(account.id || null)} onMouseLeave={() => setHoveredCard(null)}>
               {/* Account Card - Glass Effect */}
               <div className="mt-4 relative rounded-2xl p-4 backdrop-blur-xl border bg-white/30 transition-all duration-300">
                 <div className="relative rounded-3xl overflow-hidden backdrop-blur-2xl shadow-xl transition-all duration-300 hover:shadow-2xl hover:scale-[1.02]">
@@ -121,26 +115,6 @@ export default function AccountsDesktop() {
                           {account.accountName}
                         </h3>
                       </div>
-                      
-                      {/* Actions Menu */}
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button className="w-8 h-8 rounded-full bg-white/15 backdrop-blur-md hover:bg-white/25 transition-all 
-                          flex items-center justify-center">
-                            <MoreVertical size={16}/>
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-48">
-                          <DropdownMenuItem onClick={() => handleEdit(account.id!)}>
-                            <Edit2 size={16} className="mr-2" />
-                            Edit Account
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleDelete(account.id!)} className="text-destructive focus:text-destructive">
-                            <Trash2 size={16} className="mr-2" />
-                            Delete Account
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
                     </div>
 
                     {/* Balance */}
@@ -180,12 +154,13 @@ export default function AccountsDesktop() {
                   <div className="flex gap-2 pt-2">
                     <Button onClick={() => handleEdit(account.id!)} className={`flex-1 h-14 ${getButtonStyle(theme)} font-bold text-base rounded-full shadow-lg
                       hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 group relative overflow-hidden`}>
+                      <Edit2 size={16} className="mr-2" />
                       Edit
                     </Button>
-                    <Button onClick={() => console.log('View transactions')}
-                      className={`flex-1 h-14 ${getButtonStyle(theme)} font-bold text-base rounded-full shadow-lg
+                    <Button onClick={() => handleDelete(account.id!)} className={`flex-1 h-14 ${getButtonStyle(theme)} font-bold text-base rounded-full shadow-lg
                       hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 group relative overflow-hidden`}>
-                      Transactions
+                      <Trash2 size={16} className="mr-2" />
+                      Delete
                     </Button>
                   </div>
                 </div>
@@ -198,7 +173,7 @@ export default function AccountsDesktop() {
 
           {/* Add Account Card */}
           <Button onClick={handleCreate} className="mt-4 relative rounded-3xl p-6 backdrop-blur-xl border-2 border-dashed border-white/40 bg-white/20 hover:bg-white/30 
-          hover:border-white/60 transition-all duration-300 flex flex-col items-center justify-center min-h-[24rem] group">
+            hover:border-white/60 transition-all duration-300 flex flex-col items-center justify-center min-h-[24rem] group">
             <div className={`w-16 h-16 rounded-full ${getButtonStyle(theme)} flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform`}>
               <Plus size={32} className="text-white" />
             </div>
@@ -216,7 +191,7 @@ export default function AccountsDesktop() {
             <h2 className="text-2xl font-bold text-foreground mb-3">No Accounts Yet</h2>
             <p className="text-muted-foreground mb-6">Get started by adding your first bank account</p>
             <Button onClick={handleCreate} className="px-6 py-3 rounded-2xl bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-500 
-            hover:to-orange-600 text-white font-semibold shadow-lg">
+              hover:to-orange-600 text-white font-semibold shadow-lg">
               <Plus size={20} className="mr-2" />
               Add Your First Account
             </Button>

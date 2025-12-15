@@ -87,14 +87,14 @@ export default function LandingDesktop() {
             <div className="relative z-10">
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-12 h-12 bg-white/15 backdrop-blur-md rounded-2xl flex items-center justify-center">
-                  <TrendingUp size={24} className="drop-shadow-lg" />
+                  <TrendingUp size={24} />
                 </div>
                 <div>
                   <p className="text-sm font-medium drop-shadow">Total Balance</p>
                   <p className="text-xs drop-shadow">{stats.accountCount} account{stats.accountCount !== 1 ? 's' : ''}</p>
                 </div>
               </div>
-              <p className="text-5xl font-bold mb-2 drop-shadow-[0_2px_10px_rgba(0,0,0,0.3)]">
+              <p className="text-5xl font-bold mb-2">
                 {formatBalance(stats.balance)}
               </p>
               <div className="flex items-center gap-2 mt-4 drop-shadow">
@@ -216,7 +216,7 @@ export default function LandingDesktop() {
                 <div className="flex items-center justify-between mb-4">
                   <div>
                     <p className="text-sm font-medium mb-1 drop-shadow">Net This Month</p>
-                    <p className="text-3xl font-bold drop-shadow-[0_2px_10px_rgba(0,0,0,0.3)]">
+                    <p className="text-3xl font-bold">
                       {stats.income - stats.expenses >= 0 ? '+' : ''}
                       {formatBalance(stats.income - stats.expenses)}
                     </p>

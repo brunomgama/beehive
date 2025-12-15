@@ -13,10 +13,13 @@ import { BankAccount, bankAccountApi } from "@/lib/api/bank/accounts-api"
 import { formatBalance } from "@/lib/util/converter"
 import { MovementRecurrence, PlannedMovement, plannedMovementApi } from "@/lib/api/bank/planned-api"
 import { MovementType } from "@/lib/api/bank/movements-api"
+import { useTheme } from "@/contexts/theme-context"
+import { getButtonStyle } from "@/lib/themes"
 
 export default function PlannedMovementsDesktop() {
   const { user } = useAuth()
   const router = useRouter()
+  const { theme } = useTheme()
   const [plannedMovements, setPlannedMovements] = useState<PlannedMovement[]>([])
   const [accounts, setAccounts] = useState<BankAccount[]>([])
   const [loading, setLoading] = useState(true)
@@ -113,9 +116,8 @@ export default function PlannedMovementsDesktop() {
             </p>
           </div>
           
-          <Button onClick={() => router.push('/bank/schedule/new')}
-            className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-amber-400 
-            to-orange-500 hover:from-amber-500 hover:to-orange-600 text-white font-semibold shadow-lg hover:shadow-xl transition-all">
+          <Button onClick={() => router.push('/planned/add')}
+            className={`flex items-center gap-2 px-6 py-3 rounded-xl ${getButtonStyle(theme)} font-semibold shadow-lg hover:shadow-xl transition-all`}>
             <Plus size={20} />
             Add Planned Transaction
           </Button>
@@ -224,7 +226,7 @@ export default function PlannedMovementsDesktop() {
           </DropdownMenu>
 
           {/* Search Button */}
-          <Button size="icon" className="rounded-full bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-white">
+          <Button size="icon" className={`rounded-full bg-gradient-to-r from-amber-400 ${getButtonStyle(theme)}`}>
             <Search size={20} />
           </Button>
         </div>
