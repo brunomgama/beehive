@@ -248,7 +248,7 @@ public class JwtService {
         } catch (MalformedJwtException e) {
             logger.error("Malformed JWT token - Error: {}", e.getMessage());
             throw e;
-        } catch (SignatureException e) {
+        } catch (SecurityException e) {
             logger.error("Invalid JWT token signature - Error: {}", e.getMessage());
             throw e;
         } catch (IllegalArgumentException e) {

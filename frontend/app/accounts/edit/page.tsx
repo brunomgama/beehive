@@ -1,22 +1,20 @@
 'use client'
 
-import { Suspense, useState } from 'react'
+import { Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import AccountEditDesktop from '@/components/desktop/accounts/edit-account'
-import DesktopHeader from '@/components/desktop/header/desktop_header'
+import DesktopLayout from '@/components/desktop/layout/desktop-layout'
 import { ProtectedRoute } from '@/components/protected-route'
 
 function EditAccountContent() {
   const searchParams = useSearchParams()
   const accountId = searchParams.get('id')
-  const [activeIndex, setActiveIndex] = useState(3)
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen w-full bg-gradient-to-br from-muted/30 to-background">
-        <DesktopHeader activeIndex={activeIndex} onActiveChange={setActiveIndex} />
+      <DesktopLayout>
         <AccountEditDesktop accountId={accountId ? parseInt(accountId) : null} />
-      </div>
+      </DesktopLayout>
     </ProtectedRoute>
   )
 }

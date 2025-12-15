@@ -7,6 +7,12 @@ export const API_ENDPOINTS = {
     logout: `${API_BASE_URL}/v1/auth/logout`,
     me: `${API_BASE_URL}/v1/auth/me`,
   },
+  sessions: {
+    me: `${API_BASE_URL}/v1/sessions/me`,
+    revoke: (sessionId: number) => `${API_BASE_URL}/v1/sessions/${sessionId}`,
+    revokeOthers: `${API_BASE_URL}/v1/sessions/others`,
+    revokeAll: `${API_BASE_URL}/v1/sessions/all`,
+  },
   user: {
     users: `${API_BASE_URL}/v1/users`,
     userById: (id: number) => `${API_BASE_URL}/v1/users/${id}`,

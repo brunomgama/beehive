@@ -4,7 +4,9 @@ import com.beehive.dashboard.dto.authentication.AuthenticationResponse;
 import com.beehive.dashboard.entity.authentication.LoginRequest;
 import com.beehive.dashboard.entity.authentication.RegisterRequest;
 import com.beehive.dashboard.service.authentication.AuthenticationService;
+import com.beehive.dashboard.service.authentication.SessionService;
 import com.beehive.dashboard.entity.authentication.User;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,6 +27,9 @@ public class AuthenticationController {
     @Autowired
     private AuthenticationService authenticationService;
 
+    @Autowired
+    private SessionService sessionService;
+
     /**
      * Registers a new user account in the system.
      *
@@ -32,7 +37,7 @@ public class AuthenticationController {
      * @return ResponseEntity with AuthenticationResponse containing JWT token and user details, or error response
      */
     @PostMapping("/register")
-    public ResponseEntity<AuthenticationResponse> register(@Valid @RequestBody RegisterRequest request) {
+    public ResponseEntity<AuthenticationResponse> register(@Valid @RequestBody RegisterRequest request, HttpServletRequest httpRequest) {
         logger.info("Registration attempt for username: {} and email: {}", request.getUsername(), request.getEmail());
 
         try {
@@ -43,6 +48,10 @@ public class AuthenticationController {
             logger.debug("Creating user object for registration: {}", user.getUsername());
             String token = authenticationService.register(user);
             logger.info("User registration successful for username: {}", request.getUsername());
+
+            String userAgent = httpRequest.getHeader("User-Agent");
+            String ipAddress = getClientIpAddress(httpRequest);
+            sessionService.createSession(user.getId(), token, userAgent, ipAddress);
 
             AuthenticationResponse response = new AuthenticationResponse(
                     user.getId(), token, user.getUsername(), user.getEmail(),
@@ -64,7 +73,7 @@ public class AuthenticationController {
      * @return ResponseEntity with AuthenticationResponse containing JWT token and user details, or error response
      */
     @PostMapping("/login")
-    public ResponseEntity<AuthenticationResponse> login(@Valid @RequestBody LoginRequest request) {
+    public ResponseEntity<AuthenticationResponse> login(@Valid @RequestBody LoginRequest request, HttpServletRequest httpRequest) {
         logger.info("Login attempt for username: {}", request.getUsername());
 
         try {
@@ -73,6 +82,10 @@ public class AuthenticationController {
 
             User user = authenticationService.getCurrentUser(token);
             logger.info("Login successful for username: {}", request.getUsername());
+
+            String userAgent = httpRequest.getHeader("User-Agent");
+            String ipAddress = getClientIpAddress(httpRequest);
+            sessionService.createSession(user.getId(), token, userAgent, ipAddress);
 
             AuthenticationResponse response = new AuthenticationResponse(
                     user.getId(), token, user.getUsername(), user.getEmail(),
@@ -104,6 +117,8 @@ public class AuthenticationController {
             User user = authenticationService.getCurrentUser(token);
             logger.info("Successfully retrieved current user: {}", user.getUsername());
 
+            sessionService.updateLastActive(token);
+
             AuthenticationResponse response = new AuthenticationResponse(
                     user.getId(), token, user.getUsername(), user.getEmail(),
                     user.getFirstName(), user.getLastName(), user.getRole().name()
@@ -115,5 +130,20 @@ public class AuthenticationController {
             logger.error("Failed to retrieve current user information - Error: {}", e.getMessage());
             return ResponseEntity.badRequest().body(null);
         }
+    }
+
+    /**
+     * Gets the client IP address from the request, considering proxies.
+     */
+    private String getClientIpAddress(HttpServletRequest request) {
+        String xForwardedFor = request.getHeader("X-Forwarded-For");
+        if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
+            return xForwardedFor.split(",")[0].trim();
+        }
+        String xRealIp = request.getHeader("X-Real-IP");
+        if (xRealIp != null && !xRealIp.isEmpty()) {
+            return xRealIp;
+        }
+        return request.getRemoteAddr();
     }
 }

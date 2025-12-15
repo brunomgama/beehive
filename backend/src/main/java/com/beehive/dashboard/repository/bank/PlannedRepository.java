@@ -1,6 +1,5 @@
 package com.beehive.dashboard.repository.bank;
 
-import com.beehive.dashboard.entity.bank.Movement;
 import com.beehive.dashboard.entity.bank.Planned;
 import com.beehive.dashboard.types.bank.MovementStatus;
 import com.beehive.dashboard.types.bank.MovementType;

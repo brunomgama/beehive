@@ -62,7 +62,11 @@ export default function DesktopHeader({ activeIndex, onActiveChange }: DesktopHe
             </nav>
 
             {/* Settings button - Separate blur container */}
-            <Button onClick={() => handleNavigation(navItems[6])} className="px-4 h-12 rounded-full bg-white/60 backdrop-blur-xl border border-white/50 shadow-sm hover:bg-white/70 transition-all flex items-center gap-2 h-11">
+            <Button onClick={() => handleNavigation(navItems[6])} 
+              className={`px-4 h-12 rounded-full backdrop-blur-xl border border-white/50 shadow-sm transition-all flex items-center gap-2 ${
+                activeIndex === 0 ? 'shadow-md' : 'bg-white/60 hover:bg-white/70'
+              }`}
+              style={activeIndex === 0 ? { backgroundColor: themeColors.primary } : undefined}>
               <Settings size={18} />
               <span className="text-sm font-medium">Settings</span>
             </Button>
