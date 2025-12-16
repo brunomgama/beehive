@@ -1,7 +1,6 @@
-import { API_ENDPOINTS } from "@/lib/api-config"
+import { API_ENDPOINTS } from "@/lib/api/api-config"
 import { apiService } from "../api-service"
-
-export type AccountType = 'CURRENT' | 'SAVINGS' | 'INVESTMENTS' | 'CLOSED'
+import { AccountType } from "../types"
 
 export interface BankAccount {
   id?: number

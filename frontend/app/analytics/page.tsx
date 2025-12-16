@@ -1,18 +1,14 @@
 'use client'
 
+import AnalyticsDesktop from '@/components/desktop/analytics/analytics'
 import { AnalyticsMobile } from '@/components/mobile/analytics/analytics'
-import { useIsMobile } from '@/hooks/use-mobile'
+import { ProtectedRoute } from '@/components/protected-route'
+import { ResponsiveLayout } from '@/components/responsive-layout'
 
 export default function Analytics() {
-  const isMobile = useIsMobile()
-
   return (
-    <>
-      {isMobile ? (
-        <AnalyticsMobile />
-      ) : (
-        <></>
-      )}
-    </>
+    <ProtectedRoute>
+      <ResponsiveLayout mobile={<AnalyticsMobile />} desktop={<AnalyticsDesktop/>} />
+    </ProtectedRoute>
   )
 }

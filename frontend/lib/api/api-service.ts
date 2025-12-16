@@ -1,18 +1,17 @@
-interface ApiResponse<T = any> {
-  data?: T
-  error?: string
-  status: number
-}
+import { ApiResponse } from "./types"
 
 class ApiService {
+  /**
+   * Get authorization headers with token if available
+   */
   private getAuthHeaders(): HeadersInit {
     const token = localStorage.getItem('auth_token')
-    return {
-      'Content-Type': 'application/json',
-      ...(token && { Authorization: `Bearer ${token}` }),
-    }
+    return {'Content-Type': 'application/json', ...(token && { Authorization: `Bearer ${token}` }),}
   }
 
+  /**
+   * Base request handler with error handling and response parsing
+   */
   private async request<T>(url: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
     try {
       const response = await fetch(url, {
@@ -22,6 +21,7 @@ class ApiService {
         },
         ...options,
       })
+
       const contentType = response.headers.get('content-type')
       const hasJsonContent = contentType?.includes('application/json')
       
@@ -51,6 +51,9 @@ class ApiService {
     }
   }
 
+  /**
+   * HTTP POST request
+   */
   async post<T>(url: string, body: any): Promise<ApiResponse<T>> {
     return this.request<T>(url, {
       method: 'POST',
@@ -58,12 +61,18 @@ class ApiService {
     })
   }
 
+  /**
+   * HTTP GET request
+   */
   async get<T>(url: string): Promise<ApiResponse<T>> {
     return this.request<T>(url, {
       method: 'GET',
     })
   }
 
+  /**
+   * HTTP PUT request
+   */
   async put<T>(url: string, body: any): Promise<ApiResponse<T>> {
     return this.request<T>(url, {
       method: 'PUT',
@@ -71,11 +80,28 @@ class ApiService {
     })
   }
 
+  /**
+   * HTTP DELETE request
+   */
   async delete<T>(url: string): Promise<ApiResponse<T>> {
     return this.request<T>(url, {
       method: 'DELETE',
     })
   }
+
+  /**
+   * HTTP PATCH request
+   */
+  async patch<T>(url: string, body: any): Promise<ApiResponse<T>> {
+    return this.request<T>(url, {
+      method: 'PATCH',
+      body: JSON.stringify(body),
+    })
+  }
 }
+
+// ============================================================================
+// SINGLETON INSTANCE
+// ============================================================================
 
 export const apiService = new ApiService()

@@ -1,91 +1,38 @@
 'use client'
 
-import { useState, useEffect } from "react"
+import { useState } from 'react'
 import { ArrowUpRight, ArrowDownRight, Search, Filter, ArrowLeft, Repeat, Calendar } from "lucide-react"
 import { format } from "date-fns"
-import { useAuth } from "@/contexts/auth-context"
 import { useTheme } from "@/contexts/theme-context"
 import { getMovementIcon } from "@/lib/util/movement-icons"
 import Image from "next/image"
-import { PlannedMovement, plannedMovementApi, MovementType, MovementRecurrence } from "@/lib/api/bank/planned-api"
-import { BankAccount, bankAccountApi } from "@/lib/api/bank/accounts-api"
-import { formatBalance } from "@/lib/util/converter"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useRouter } from "next/navigation"
 import { getThemeButtonStyle } from "@/lib/themes"
-
-const formatCategoryLabel = (category: string): string => {
-  return category
-    .split('_')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join(' ')
-}
+import { formatBalance } from "@/lib/util/utils"
+import { CATEGORY_LABELS } from '@/lib/util/categories'
+import { usePlannedList } from '@/hooks/planned/use-planned-list'
 
 export default function PlannedMovementsMobile() {
     const { theme } = useTheme()
-    const { user } = useAuth()
     const router = useRouter()
-    const [plannedMovements, setPlannedMovements] = useState<PlannedMovement[]>([])
-    const [accounts, setAccounts] = useState<BankAccount[]>([])
-    const [loading, setLoading] = useState(true)
-    const [searchQuery, setSearchQuery] = useState('')
-    const [filterType, setFilterType] = useState<'ALL' | MovementType>('ALL')
-    const [filterRecurrence, setFilterRecurrence] = useState<'ALL' | MovementRecurrence>('ALL')
+    const {
+        plannedMovements,
+        accounts,
+        loading,
+        searchQuery,
+        setSearchQuery,
+        filterType,
+        setFilterType,
+        filterRecurrence,
+        setFilterRecurrence,
+        filterAccount,
+        setFilterAccount,
+        stats,
+    } = usePlannedList()
+
     const [showFilters, setShowFilters] = useState(false)
-    const [selectedAccount, setSelectedAccount] = useState<number | null>(null)
-
-    useEffect(() => {
-        fetchData()
-    }, [user?.id])
-
-    const fetchData = async () => {
-        if (!user?.id) return
-        
-        try {
-            setLoading(true)
-            const accountsResult = await bankAccountApi.getByUserId(user.id)
-            if (accountsResult.data) {
-                setAccounts(accountsResult.data)
-                
-                const allPlannedMovements: PlannedMovement[] = []
-                for (const account of accountsResult.data) {
-                    if (account.id) {
-                        const plannedResult = await plannedMovementApi.getByAccountId(account.id)
-                        if (plannedResult.data) {
-                            allPlannedMovements.push(...plannedResult.data)
-                        }
-                    }
-                }
-                setPlannedMovements(allPlannedMovements.sort((a, b) => 
-                    new Date(a.nextExecution).getTime() - new Date(b.nextExecution).getTime()
-                ))
-            }
-        } catch (error) {
-            console.error('Error fetching data:', error)
-        } finally {
-            setLoading(false)
-        }
-    }
-
-    const filteredPlannedMovements = plannedMovements.filter(movement => {
-        const matchesSearch = movement.description.toLowerCase().includes(searchQuery.toLowerCase())
-        const matchesType = filterType === 'ALL' || movement.type === filterType
-        const matchesRecurrence = filterRecurrence === 'ALL' || movement.recurrence === filterRecurrence
-        const matchesAccount = !selectedAccount || movement.accountId === selectedAccount
-        return matchesSearch && matchesType && matchesRecurrence && matchesAccount
-    })
-
-    const stats = {
-        total: filteredPlannedMovements.length,
-        active: filteredPlannedMovements.filter(m => m.status === 'PENDING' || m.status === 'CONFIRMED').length,
-        monthlyIncome: filteredPlannedMovements
-            .filter(m => m.type === 'INCOME' && m.recurrence === 'MONTHLY')
-            .reduce((sum, m) => sum + m.amount, 0),
-        monthlyExpenses: filteredPlannedMovements
-            .filter(m => m.type === 'EXPENSE' && m.recurrence === 'MONTHLY')
-            .reduce((sum, m) => sum + Math.abs(m.amount), 0),
-    }
 
     if (loading) {
         return (
@@ -98,14 +45,12 @@ export default function PlannedMovementsMobile() {
                         <h1 className="text-2xl font-bold text-foreground">Planned Transactions</h1>
                     </div>
                 
-                    {/* Tab Pills Skeleton */}
                     <div className="flex gap-2 mb-4 overflow-x-auto pb-1">
                         {[1, 2, 3].map((i) => (
                             <div key={i} className="h-9 w-24 bg-muted rounded-full animate-pulse"></div>
                         ))}
                     </div>
 
-                    {/* Filter Row Skeleton */}
                     <div className="flex items-center justify-between">
                         <div className="h-8 w-20 bg-muted rounded animate-pulse"></div>
                     </div>
@@ -131,9 +76,8 @@ export default function PlannedMovementsMobile() {
 
     return (
         <div className="min-h-screen bg-background pb-32">
-            {/* Header Section with new design */}
+            {/* Header Section */}
             <div className="bg-muted/30 px-6 pt-8 pb-6">
-                {/* Back Arrow and Title */}
                 <div className="flex items-center gap-3 mb-6">
                     <button
                         onClick={() => router.push('/')}
@@ -147,30 +91,44 @@ export default function PlannedMovementsMobile() {
                 
                 {/* Tab Pills - Filter Type */}
                 <div className="flex gap-2 mb-4 overflow-x-auto pb-1">
-                    <Button variant={filterType === 'ALL' ? 'default' : 'secondary'} size="sm"
-                        onClick={() => setFilterType('ALL')} className={`rounded-full whitespace-nowrap h-9 px-4 flex-shrink-0 ${
-                            filterType === 'ALL' 
-                                ? `${getThemeButtonStyle(theme, 'navIndicator')} text-white`
-                                : ''
-                        }`}>
+                    <Button 
+                        variant={filterType === 'ALL' ? 'default' : 'secondary'} 
+                        size="sm"
+                        onClick={() => setFilterType('ALL')} 
+                        className={`rounded-full whitespace-nowrap h-9 px-4 flex-shrink-0 ${
+                            filterType === 'ALL' ? `${getThemeButtonStyle(theme, 'navIndicator')} text-white` : ''
+                        }`}
+                    >
                         All planned
                     </Button>
-                    <Button variant={filterType === 'INCOME' ? 'default' : 'secondary'}
-                        size="sm" onClick={() => setFilterType('INCOME')} className="rounded-full whitespace-nowrap h-9 px-4 flex-shrink-0"
-                        style={filterType === 'INCOME' ? { backgroundColor: 'var(--ok)', color: 'var(--ok-foreground)' } : {}}>
+                    <Button 
+                        variant={filterType === 'INCOME' ? 'default' : 'secondary'}
+                        size="sm" 
+                        onClick={() => setFilterType('INCOME')} 
+                        className="rounded-full whitespace-nowrap h-9 px-4 flex-shrink-0"
+                        style={filterType === 'INCOME' ? { backgroundColor: 'var(--ok)', color: 'var(--ok-foreground)' } : {}}
+                    >
                         Income
                     </Button>
-                    <Button variant={filterType === 'EXPENSE' ? 'default' : 'secondary'}
-                        size="sm" onClick={() => setFilterType('EXPENSE')} className="rounded-full whitespace-nowrap h-9 px-4 flex-shrink-0"
-                        style={filterType === 'EXPENSE' ? { backgroundColor: 'var(--nok)', color: 'var(--nok-foreground)' } : {}}>
+                    <Button 
+                        variant={filterType === 'EXPENSE' ? 'default' : 'secondary'}
+                        size="sm" 
+                        onClick={() => setFilterType('EXPENSE')} 
+                        className="rounded-full whitespace-nowrap h-9 px-4 flex-shrink-0"
+                        style={filterType === 'EXPENSE' ? { backgroundColor: 'var(--nok)', color: 'var(--nok-foreground)' } : {}}
+                    >
                         Expenses
                     </Button>
                 </div>
 
                 {/* Filters Row */}
                 <div className="flex items-center justify-between">
-                    <Button variant="ghost" size="sm" onClick={() => setShowFilters(!showFilters)}
-                        className="h-auto p-0 hover:bg-transparent text-foreground">
+                    <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => setShowFilters(!showFilters)}
+                        className="h-auto p-0 hover:bg-transparent text-foreground"
+                    >
                         <Filter size={16} className="mr-2" />
                         <span className="text-sm font-medium">Filters</span>
                     </Button>
@@ -183,14 +141,22 @@ export default function PlannedMovementsMobile() {
                         <div>
                             <p className="text-xs text-muted-foreground mb-2 font-medium">Account</p>
                             <div className="flex gap-2 overflow-x-auto pb-1">
-                                <Button variant={selectedAccount === null ? 'default' : 'secondary'} size="sm" 
-                                    onClick={() => setSelectedAccount(null)} className="rounded-full whitespace-nowrap text-xs h-8">
+                                <Button 
+                                    variant={filterAccount === null ? 'default' : 'secondary'} 
+                                    size="sm" 
+                                    onClick={() => setFilterAccount(null)} 
+                                    className="rounded-full whitespace-nowrap text-xs h-8"
+                                >
                                     All Accounts
                                 </Button>
                                 {accounts.map(account => (
-                                    <Button key={account.id} variant={selectedAccount === account.id ? 'default' : 'secondary'} 
-                                        size="sm" onClick={() => setSelectedAccount(account.id!)} 
-                                        className="rounded-full whitespace-nowrap text-xs h-8">
+                                    <Button 
+                                        key={account.id} 
+                                        variant={filterAccount === account.id ? 'default' : 'secondary'} 
+                                        size="sm" 
+                                        onClick={() => setFilterAccount(account.id!)} 
+                                        className="rounded-full whitespace-nowrap text-xs h-8"
+                                    >
                                         {account.accountName}
                                     </Button>
                                 ))}
@@ -201,24 +167,44 @@ export default function PlannedMovementsMobile() {
                         <div>
                             <p className="text-xs text-muted-foreground mb-2 font-medium">Frequency</p>
                             <div className="flex gap-2 overflow-x-auto pb-1">
-                                <Button variant={filterRecurrence === 'ALL' ? 'default' : 'secondary'} size="sm" 
-                                    onClick={() => setFilterRecurrence('ALL')} className="rounded-full whitespace-nowrap text-xs h-8">
+                                <Button 
+                                    variant={filterRecurrence === 'ALL' ? 'default' : 'secondary'} 
+                                    size="sm" 
+                                    onClick={() => setFilterRecurrence('ALL')} 
+                                    className="rounded-full whitespace-nowrap text-xs h-8"
+                                >
                                     All
                                 </Button>
-                                <Button variant={filterRecurrence === 'DAILY' ? 'default' : 'secondary'} size="sm" 
-                                    onClick={() => setFilterRecurrence('DAILY')} className="rounded-full whitespace-nowrap text-xs h-8">
+                                <Button 
+                                    variant={filterRecurrence === 'DAILY' ? 'default' : 'secondary'} 
+                                    size="sm" 
+                                    onClick={() => setFilterRecurrence('DAILY')} 
+                                    className="rounded-full whitespace-nowrap text-xs h-8"
+                                >
                                     Daily
                                 </Button>
-                                <Button variant={filterRecurrence === 'WEEKLY' ? 'default' : 'secondary'} size="sm" 
-                                    onClick={() => setFilterRecurrence('WEEKLY')} className="rounded-full whitespace-nowrap text-xs h-8">
+                                <Button 
+                                    variant={filterRecurrence === 'WEEKLY' ? 'default' : 'secondary'} 
+                                    size="sm" 
+                                    onClick={() => setFilterRecurrence('WEEKLY')} 
+                                    className="rounded-full whitespace-nowrap text-xs h-8"
+                                >
                                     Weekly
                                 </Button>
-                                <Button variant={filterRecurrence === 'MONTHLY' ? 'default' : 'secondary'} size="sm" 
-                                    onClick={() => setFilterRecurrence('MONTHLY')} className="rounded-full whitespace-nowrap text-xs h-8">
+                                <Button 
+                                    variant={filterRecurrence === 'MONTHLY' ? 'default' : 'secondary'} 
+                                    size="sm" 
+                                    onClick={() => setFilterRecurrence('MONTHLY')} 
+                                    className="rounded-full whitespace-nowrap text-xs h-8"
+                                >
                                     Monthly
                                 </Button>
-                                <Button variant={filterRecurrence === 'YEARLY' ? 'default' : 'secondary'} size="sm" 
-                                    onClick={() => setFilterRecurrence('YEARLY')} className="rounded-full whitespace-nowrap text-xs h-8">
+                                <Button 
+                                    variant={filterRecurrence === 'YEARLY' ? 'default' : 'secondary'} 
+                                    size="sm" 
+                                    onClick={() => setFilterRecurrence('YEARLY')} 
+                                    className="rounded-full whitespace-nowrap text-xs h-8"
+                                >
                                     Yearly
                                 </Button>
                             </div>
@@ -230,7 +216,6 @@ export default function PlannedMovementsMobile() {
             {/* Stats Cards */}
             <div className="px-6 mb-6">
                 <div className="grid grid-cols-2 gap-4">
-                    {/* Monthly Expenses */}
                     <div className="bg-card rounded-3xl p-4 shadow-sm border border-border">
                         <div className="flex items-center gap-2 mb-1">
                             <div className="w-2 h-2 rounded-full bg-nok"></div>
@@ -239,7 +224,6 @@ export default function PlannedMovementsMobile() {
                         <p className="text-2xl font-bold text-nok">-{formatBalance(stats.monthlyExpenses)}</p>
                     </div>
 
-                    {/* Monthly Income */}
                     <div className="bg-card rounded-3xl p-4 shadow-sm border border-border">
                         <div className="flex items-center gap-2 mb-1">
                             <div className="w-2 h-2 rounded-full bg-ok"></div>
@@ -248,7 +232,6 @@ export default function PlannedMovementsMobile() {
                         <p className="text-2xl font-bold text-ok">+{formatBalance(stats.monthlyIncome)}</p>
                     </div>
 
-                    {/* Total Planned */}
                     <div className="bg-card rounded-3xl p-4 shadow-sm border border-border">
                         <div className="flex items-center gap-2 mb-1">
                             <Repeat size={12} className="text-blue-500" />
@@ -257,7 +240,6 @@ export default function PlannedMovementsMobile() {
                         <p className="text-2xl font-bold text-foreground">{stats.total}</p>
                     </div>
 
-                    {/* Active Status */}
                     <div className="bg-card rounded-3xl p-4 shadow-sm border border-border">
                         <div className="flex items-center gap-2 mb-1">
                             <Calendar size={12} className="text-green-500" />
@@ -272,15 +254,18 @@ export default function PlannedMovementsMobile() {
             <div className="px-6 mb-4">
                 <div className="relative">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={20} />
-                    <Input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} 
+                    <Input 
+                        value={searchQuery} 
+                        onChange={(e) => setSearchQuery(e.target.value)} 
                         placeholder="Search planned transactions..." 
-                        className="pl-12 h-12 bg-card border-border rounded-2xl"/>
+                        className="pl-12 h-12 bg-card border-border rounded-2xl"
+                    />
                 </div>
             </div>
 
             {/* Planned Movements List */}
             <div className="px-6 space-y-3">
-                {filteredPlannedMovements.length === 0 ? (
+                {plannedMovements.length === 0 ? (
                     <div className="bg-card rounded-3xl p-12 shadow-sm border border-border text-center">
                         <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
                             <Repeat className="w-8 h-8 text-muted-foreground" />
@@ -288,23 +273,40 @@ export default function PlannedMovementsMobile() {
                         <p className="text-sm text-muted-foreground">No planned transactions found</p>
                     </div>
                 ) : (
-                    filteredPlannedMovements.map((movement) => {
+                    plannedMovements.map((movement) => {
                         const icon = getMovementIcon(movement.description, movement.category)
                         const account = accounts.find(a => a.id === movement.accountId)
                         
                         return (
-                            <div key={movement.id} className="bg-card rounded-3xl p-4 shadow-sm border border-border hover:bg-muted/50 transition-colors">
+                            <div 
+                                key={movement.id} 
+                                className="bg-card rounded-3xl p-4 shadow-sm border border-border hover:bg-muted/50 transition-colors"
+                            >
                                 <div className="flex items-center gap-4">
                                     {icon.type === 'image' ? (
-                                        <div className="w-12 h-12 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0" style={{ backgroundColor: icon.bgColor }}>
-                                            <Image src={icon.content} alt={movement.description} width={32} height={32} className="object-contain" />
+                                        <div 
+                                            className="w-12 h-12 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0" 
+                                            style={{ backgroundColor: icon.bgColor }}
+                                        >
+                                            <Image 
+                                                src={icon.content} 
+                                                alt={movement.description} 
+                                                width={32} 
+                                                height={32} 
+                                                className="object-contain" 
+                                            />
                                         </div>
                                     ) : icon.type === 'emoji' ? (
-                                        <div className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: icon.bgColor }}>
+                                        <div 
+                                            className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0" 
+                                            style={{ backgroundColor: icon.bgColor }}
+                                        >
                                             <span className="text-2xl">{icon.content}</span>
                                         </div>
                                     ) : (
-                                        <div className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 ${movement.type === 'INCOME' ? 'bg-ok/10' : 'bg-nok/10'}`}>
+                                        <div className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 ${
+                                            movement.type === 'INCOME' ? 'bg-ok/10' : 'bg-nok/10'
+                                        }`}>
                                             {movement.type === 'INCOME' ? (
                                                 <ArrowUpRight size={20} className="text-ok" />
                                             ) : (
@@ -329,7 +331,9 @@ export default function PlannedMovementsMobile() {
                                             )}
                                         </div>
                                         {account && (
-                                            <p className="text-xs text-muted-foreground mt-1">{account.accountName} • {formatCategoryLabel(movement.category)}</p>
+                                            <p className="text-xs text-muted-foreground mt-1">
+                                                {account.accountName} • {CATEGORY_LABELS[movement.category]}
+                                            </p>
                                         )}
                                     </div>
                                     
@@ -348,10 +352,10 @@ export default function PlannedMovementsMobile() {
             </div>
 
             {/* Results Count */}
-            {filteredPlannedMovements.length > 0 && (
+            {plannedMovements.length > 0 && (
                 <div className="px-6 mt-6 text-center">
                     <p className="text-sm text-muted-foreground">
-                        Showing {filteredPlannedMovements.length} of {plannedMovements.length} planned transaction{plannedMovements.length !== 1 ? 's' : ''}
+                        Showing {plannedMovements.length} planned transaction{plannedMovements.length !== 1 ? 's' : ''}
                     </p>
                 </div>
             )}

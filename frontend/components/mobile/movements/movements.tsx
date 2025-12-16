@@ -7,14 +7,15 @@ import { useAuth } from "@/contexts/auth-context"
 import { useTheme } from "@/contexts/theme-context"
 import { getMovementIcon } from "@/lib/util/movement-icons"
 import Image from "next/image"
-import { Movement, movementApi, MovementType } from "@/lib/api/bank/movements-api"
+import { Movement, movementApi } from "@/lib/api/bank/movements-api"
 import { BankAccount, bankAccountApi } from "@/lib/api/bank/accounts-api"
-import { formatBalance } from "@/lib/util/converter"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useRouter } from "next/navigation"
 import { getThemeButtonStyle } from "@/lib/themes"
-import { MovementDetailsDrawer } from "./movement_details_drawer"
+import { MovementDetailsDrawer } from "./movement-details-drawer"
+import { MovementType } from "@/lib/api/types"
+import { formatBalance } from "@/lib/util/utils"
 
 const formatCategoryLabel = (category: string): string => {
   return category

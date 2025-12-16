@@ -1,59 +1,34 @@
-export type Theme = "light" | "dark" | "orange";
+// ============================================================================
+// THEME TYPES & CONSTANTS
+// ============================================================================
 
-export const themes: Array<{ value: Theme; label: string; color: string }> = [
-    { value: "light", label: "Light", color: "bg-white" },
-    { value: "dark", label: "Dark", color: "bg-gray-900" },
-    { value: "orange", label: "Orange", color: "bg-orange-300" },
-];
+export type Theme = "light" | "dark" | "orange"
 
-/**
- * Get dynamic button styles based on the current theme
- */
-export const getButtonStyle = (theme: Theme): string => {
-  switch (theme) {
-    case 'light':
-      return 'bg-gradient-to-r from-[#FFB3D9] to-[#FFC9E3] hover:from-[#FFC9E3] hover:to-[#FFB3D9] text-gray-900 font-bold text-base rounded-full shadow-lg shadow-[#FFB3D9]/30 hover:shadow-[#FFB3D9]/50';
-    case 'dark':
-      return 'bg-gradient-to-r from-[#B380FF] to-[#C99EFF] hover:from-[#C99EFF] hover:to-[#B380FF] text-white font-bold text-base rounded-full shadow-lg shadow-[#B380FF]/30 hover:shadow-[#B380FF]/50';
-    case 'orange':
-      return 'bg-gradient-to-r from-[#FFB380] to-[#FFC99E] hover:from-[#FFC99E] hover:to-[#FFB380] text-white font-bold text-base rounded-full shadow-lg shadow-[#FFB380]/30 hover:shadow-[#FFB380]/50';
-    default:
-      return 'bg-gradient-to-r from-[#FFB3D9] to-[#FFC9E3] hover:from-[#FFC9E3] hover:to-[#FFB3D9] text-white font-bold text-base rounded-full shadow-lg shadow-[#FFB3D9]/30 hover:shadow-[#FFB3D9]/50';
-  }
-};
+export const AVAILABLE_THEMES: Array<{ value: Theme; label: string; color: string }> = [
+  { value: "light", label: "Light", color: "bg-white" },
+  { value: "dark", label: "Dark", color: "bg-gray-900" },
+  { value: "orange", label: "Orange", color: "bg-orange-300" },
+]
 
-/**
- * Get dynamic button styles based on the current theme
- */
-export const getCardStyle = (theme: Theme): string => {
-  switch (theme) {
-    case 'light':
-      return 'bg-gradient-to-r from-[#FFB3D9] to-[#FFC9E3] hover:from-[#FFC9E3] hover:to-[#FFB3D9] text-gray-900 font-bold text-base rounded-2xl shadow-lg shadow-[#FFB3D9]/30 hover:shadow-[#FFB3D9]/50';
-    case 'dark':
-      return 'bg-gradient-to-r from-[#B380FF] to-[#C99EFF] hover:from-[#C99EFF] hover:to-[#B380FF] text-white font-bold text-base rounded-2xl shadow-lg shadow-[#B380FF]/30 hover:shadow-[#B380FF]/50';
-    case 'orange':
-      return 'bg-gradient-to-r from-[#FFB380] to-[#FFC99E] hover:from-[#FFC99E] hover:to-[#FFB380] text-white font-bold text-base rounded-2xl shadow-lg shadow-[#FFB380]/30 hover:shadow-[#FFB380]/50';
-    default:
-      return 'bg-gradient-to-r from-[#FFB3D9] to-[#FFC9E3] hover:from-[#FFC9E3] hover:to-[#FFB3D9] text-white font-bold text-base rounded-2xl shadow-lg shadow-[#FFB3D9]/30 hover:shadow-[#FFB3D9]/50';
-  }
-};
+// ============================================================================
+// THEME COLOR PALETTES
+// ============================================================================
 
-/**
- * Get theme primary color for charts and other elements
- */
-export function getThemeColors(theme: Theme) {
-  const colors: Record<Theme, { primary: string; secondary: string }> = {
-    light: { primary: '#FFB3D9', secondary: '#FFC9E3' },
-    dark: { primary: '#B380FF', secondary: '#C99EFF' },
-    orange: { primary: '#FFB380', secondary: '#FFC99E' },
-  }
-  return colors[theme] || colors.light
+export const THEME_COLORS: Record<Theme, { primary: string; secondary: string }> = {
+  light: { primary: '#FFB3D9', secondary: '#FFC9E3' },
+  dark: { primary: '#B380FF', secondary: '#C99EFF' },
+  orange: { primary: '#FFB380', secondary: '#FFC99E' },
 }
 
-/**
- * Theme-specific button style configurations
- */
-export const themeButtonStyles = {
+// ============================================================================
+// THEME STYLE CONFIGURATIONS
+// ============================================================================
+
+const BUTTON_BASE_STYLES = 'font-bold text-base shadow-lg'
+const BUTTON_ROUNDED = 'rounded-full'
+const CARD_ROUNDED = 'rounded-2xl'
+
+export const THEME_BUTTON_STYLES = {
   light: {
     logout: 'bg-gradient-to-r from-[#FFB3D9] to-[#FFC9E3] hover:from-[#FFC9E3] hover:to-[#FFB3D9] shadow-[#FFB3D9]/30 hover:shadow-[#FFB3D9]/50',
     primary: 'bg-gradient-to-br from-[#FFB3D9] to-[#FFC9E3] text-white hover:from-[#FFA5D0] hover:to-[#FFBEDA]',
@@ -83,9 +58,36 @@ export const themeButtonStyles = {
   },
 } as const
 
+// ============================================================================
+// THEME UTILITY FUNCTIONS
+// ============================================================================
+
+/**
+ * Get theme color palette (primary & secondary colors)
+ */
+export function getThemeColors(theme: Theme) {
+  return THEME_COLORS[theme] || THEME_COLORS.light
+}
+
 /**
  * Get theme-specific button style by type
  */
-export const getThemeButtonStyle = (theme: Theme, buttonType: keyof typeof themeButtonStyles.light): string => {
-  return themeButtonStyles[theme][buttonType];
-};
+export function getThemeButtonStyle(theme: Theme, buttonType: keyof typeof THEME_BUTTON_STYLES.light): string {
+  return THEME_BUTTON_STYLES[theme][buttonType]
+}
+
+/**
+ * Get dynamic button styles based on theme (legacy support)
+ */
+export function getButtonStyle(theme: Theme): string {
+  const colors = THEME_COLORS[theme] || THEME_COLORS.light
+  return `bg-gradient-to-r from-[${colors.primary}] to-[${colors.secondary}] hover:from-[${colors.secondary}] hover:to-[${colors.primary}] text-gray-900 ${BUTTON_BASE_STYLES} ${BUTTON_ROUNDED} shadow-[${colors.primary}]/30 hover:shadow-[${colors.primary}]/50`
+}
+
+/**
+ * Get dynamic card styles based on theme (legacy support)
+ */
+export function getCardStyle(theme: Theme): string {
+  const colors = THEME_COLORS[theme] || THEME_COLORS.light
+  return `bg-gradient-to-r from-[${colors.primary}] to-[${colors.secondary}] hover:from-[${colors.secondary}] hover:to-[${colors.primary}] text-gray-900 ${BUTTON_BASE_STYLES} ${CARD_ROUNDED} shadow-[${colors.primary}]/30 hover:shadow-[${colors.primary}]/50`
+}

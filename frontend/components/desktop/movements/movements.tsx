@@ -1,95 +1,57 @@
 'use client'
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { Plus, Search, Filter, MoreVertical, Edit2, Trash2, Eye, ArrowUpRight, ArrowDownRight } from "lucide-react"
-import { useAuth } from "@/contexts/auth-context"
-import { format } from "date-fns"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from "@/components/ui/dropdown-menu"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter} from "@/components/ui/table"
-import { Movement, movementApi } from "@/lib/api/bank/movements-api"
-import { BankAccount, bankAccountApi } from "@/lib/api/bank/accounts-api"
-import { formatBalance } from "@/lib/util/converter"
-import { useTheme } from "@/contexts/theme-context"
-import { getButtonStyle } from "@/lib/themes"
+import { Plus, Search, Filter, MoreVertical, Edit2, Trash2, Eye, ArrowUpRight, ArrowDownRight } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { format } from 'date-fns'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from '@/components/ui/table'
+import { formatBalance } from '@/lib/util/utils'
+import { useTheme } from '@/contexts/theme-context'
+import { getButtonStyle } from '@/lib/themes'
+import { useMovements } from '@/hooks/use-movements'
 
+/**
+ * Movements Desktop Component
+ * Displays list of all transactions with filters and actions
+ */
 export default function MovementsDesktop() {
-  const { user } = useAuth()
   const router = useRouter()
   const { theme } = useTheme()
-  const [movements, setMovements] = useState<Movement[]>([])
-  const [accounts, setAccounts] = useState<BankAccount[]>([])
-  const [loading, setLoading] = useState(true)
-  const [searchQuery, setSearchQuery] = useState('')
-  const [filterType, setFilterType] = useState<'ALL' | 'INCOME' | 'EXPENSE'>('ALL')
-  const [filterAccount, setFilterAccount] = useState<number | null>(null)
+  const {
+    movements,
+    accounts,
+    loading,
+    searchQuery,
+    setSearchQuery,
+    filterType,
+    setFilterType,
+    filterAccount,
+    setFilterAccount,
+    stats,
+    handleDelete,
+  } = useMovements()
 
-  useEffect(() => {
-    fetchData()
-  }, [user?.id])
-
-  const fetchData = async () => {
-    if (!user?.id) return
+  /**
+   * Delete movement with confirmation
+   */
+  const onDelete = async (movementId: number) => {
+    if (!confirm('Are you sure you want to delete this transaction?')) return
     
-    try {
-      setLoading(true)
-      const accountsResult = await bankAccountApi.getByUserId(user.id)
-      if (accountsResult.data) {
-        setAccounts(accountsResult.data)
-        
-        const allMovements: Movement[] = []
-        for (const account of accountsResult.data) {
-          if (account.id) {
-            const movementsResult = await movementApi.getByAccountId(account.id)
-            if (movementsResult.data) {
-              allMovements.push(...movementsResult.data)
-            }
-          }
-        }
-        setMovements(allMovements.sort((a, b) => 
-          new Date(b.date).getTime() - new Date(a.date).getTime()
-        ))
-      }
-    } catch (error) {
-      console.error('Error fetching data:', error)
-    } finally {
-      setLoading(false)
+    const success = await handleDelete(movementId)
+    if (!success) {
+      alert('Failed to delete transaction')
     }
   }
 
-  const handleDelete = async (movementId: number) => {
-    if (!confirm('Are you sure you want to delete this movement?')) return
-    
-    try {
-      await movementApi.delete(movementId)
-      await fetchData()
-    } catch (error) {
-      console.error('Error deleting movement:', error)
-      alert('Failed to delete movement')
-    }
-  }
-
-  const filteredMovements = movements.filter(movement => {
-    const matchesSearch = movement.description.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchesType = filterType === 'ALL' || movement.type === filterType
-    const matchesAccount = !filterAccount || movement.accountId === filterAccount
-    return matchesSearch && matchesType && matchesAccount
-  })
-
-  const stats = {
-    total: filteredMovements.length,
-    income: filteredMovements.filter(m => m.type === 'INCOME').reduce((sum, m) => sum + m.amount, 0),
-    expenses: filteredMovements.filter(m => m.type === 'EXPENSE').reduce((sum, m) => sum + Math.abs(m.amount), 0),
-  }
-
+  // Loading state
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-muted/30 to-background p-8">
         <div className="max-w-[1600px] mx-auto space-y-6">
-          <div className="h-10 bg-muted rounded w-1/4 animate-pulse"></div>
-          <div className="bg-card rounded-3xl p-6 h-96 animate-pulse"></div>
+          <div className="h-10 bg-muted rounded w-1/4 animate-pulse" />
+          <div className="bg-card rounded-3xl p-6 h-96 animate-pulse" />
         </div>
       </div>
     )
@@ -110,8 +72,10 @@ export default function MovementsDesktop() {
             </p>
           </div>
           
-          <Button onClick={() => router.push('/movements/add')} className={`flex items-center gap-2 px-6 py-3 rounded-2xl 
-            ${getButtonStyle(theme)} font-semibold shadow-lg hover:shadow-xl transition-all`}>
+          <Button 
+            onClick={() => router.push('/movements/add')} 
+            className={`flex items-center gap-2 px-6 py-3 rounded-2xl ${getButtonStyle(theme)} font-semibold shadow-lg hover:shadow-xl transition-all`}
+          >
             <Plus size={20} />
             New Transaction
           </Button>
@@ -120,27 +84,27 @@ export default function MovementsDesktop() {
         {/* Stats Cards */}
         <div className="grid grid-cols-3 gap-6 mb-6">
           {/* Total Transactions */}
-          <div className="rounded-xl border border-border bg-background p-6 shadow-sm">
+          <div className="rounded-xl border bg-background p-6 shadow-sm">
             <div className="flex items-center gap-2 mb-2">
-              <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+              <div className="w-2 h-2 rounded-full bg-blue-500" />
               <p className="text-sm text-muted-foreground font-medium">Total Transactions</p>
             </div>
             <p className="text-3xl font-bold text-foreground">{stats.total}</p>
           </div>
 
           {/* Total Income */}
-          <div className="rounded-xl border border-border bg-background p-6 shadow-sm">
+          <div className="rounded-xl border bg-background p-6 shadow-sm">
             <div className="flex items-center gap-2 mb-2">
-              <div className="w-2 h-2 rounded-full bg-green-500"></div>
+              <div className="w-2 h-2 rounded-full bg-green-500" />
               <p className="text-sm text-muted-foreground font-medium">Total Income</p>
             </div>
             <p className="text-3xl font-bold text-green-600">+{formatBalance(stats.income)}</p>
           </div>
 
           {/* Total Expenses */}
-          <div className="rounded-xl border border-border bg-background p-6 shadow-sm">
+          <div className="rounded-xl border bg-background p-6 shadow-sm">
             <div className="flex items-center gap-2 mb-2">
-              <div className="w-2 h-2 rounded-full bg-red-500"></div>
+              <div className="w-2 h-2 rounded-full bg-red-500" />
               <p className="text-sm text-muted-foreground font-medium">Total Expenses</p>
             </div>
             <p className="text-3xl font-bold text-red-600">-{formatBalance(stats.expenses)}</p>
@@ -148,7 +112,7 @@ export default function MovementsDesktop() {
         </div>
 
         {/* Filters & Search */}
-        <div className="rounded-full border border-border bg-background p-2 shadow-sm flex items-center gap-2">
+        <div className="rounded-full border bg-background p-2 shadow-sm flex items-center gap-2">
           {/* Search */}
           <div className="flex-1 relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={20} />
@@ -194,13 +158,13 @@ export default function MovementsDesktop() {
           </DropdownMenu>
 
           {/* Search Button */}
-          <Button size="icon" className={`rounded-full bg-gradient-to-r from-amber-400 ${getButtonStyle(theme)}`}>
+          <Button size="icon" className={`rounded-full ${getButtonStyle(theme)}`}>
             <Search size={20} />
           </Button>
         </div>
 
-        {/* Table - Following OriginUI Principles */}
-        <div className="rounded-xl border border-border bg-background p-6 shadow-sm">
+        {/* Table */}
+        <div className="rounded-xl border bg-background p-6 shadow-sm">
           <h2 className="mb-4 text-xl font-semibold text-foreground">All Transactions</h2>
           <Table>
             <TableHeader>
@@ -216,7 +180,7 @@ export default function MovementsDesktop() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredMovements.map((movement) => {
+              {movements.map((movement) => {
                 const account = accounts.find(a => a.id === movement.accountId)
                 
                 return (
@@ -277,16 +241,16 @@ export default function MovementsDesktop() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => router.push(`/bank/movements/${movement.id}`)}>
+                          <DropdownMenuItem onClick={() => router.push(`/movements/${movement.id}`)}>
                             <Eye size={16} className="mr-2" />
                             View Details
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => router.push(`/bank/movements/${movement.id}/edit`)}>
+                          <DropdownMenuItem onClick={() => router.push(`/movements/${movement.id}/edit`)}>
                             <Edit2 size={16} className="mr-2" />
                             Edit
                           </DropdownMenuItem>
                           <DropdownMenuItem 
-                            onClick={() => handleDelete(movement.id!)}
+                            onClick={() => onDelete(movement.id!)}
                             className="text-destructive focus:text-destructive"
                           >
                             <Trash2 size={16} className="mr-2" />
@@ -302,7 +266,7 @@ export default function MovementsDesktop() {
             <TableFooter>
               <TableRow>
                 <TableCell colSpan={5} className="text-right font-semibold">
-                  Total Balance
+                  Net Balance
                 </TableCell>
                 <TableCell className="text-right font-bold text-foreground">
                   {formatBalance(stats.income - stats.expenses)}
@@ -311,17 +275,20 @@ export default function MovementsDesktop() {
               </TableRow>
             </TableFooter>
           </Table>
-          <p className="mt-4 text-center text-sm text-muted-foreground">
-            Showing {filteredMovements.length} of {movements.length} transactions
-          </p>
+          
+          {/* Empty State */}
+          {movements.length === 0 && (
+            <div className="text-center py-12">
+              <p className="text-lg text-muted-foreground">No transactions found</p>
+            </div>
+          )}
+          
+          {movements.length > 0 && (
+            <p className="mt-4 text-center text-sm text-muted-foreground">
+              Showing {movements.length} transaction{movements.length !== 1 ? 's' : ''}
+            </p>
+          )}
         </div>
-
-        {/* Empty State */}
-        {filteredMovements.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-lg text-muted-foreground">No transactions found</p>
-          </div>
-        )}
       </div>
     </div>
   )

@@ -9,7 +9,7 @@ import { getThemeButtonStyle } from "@/lib/themes"
 import { getMovementIcon } from "@/lib/util/movement-icons"
 import Image from "next/image"
 import { PlannedMovement, plannedMovementApi } from "@/lib/api/bank/planned-api"
-import { formatBalance } from "@/lib/util/converter"
+import { formatBalance } from "@/lib/util/utils"
 import { useRouter } from "next/navigation"
 
 export function PlannedMovements() {

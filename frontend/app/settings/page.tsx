@@ -1,23 +1,14 @@
 'use client'
 
-import SettingsMobilePage from "@/components/mobile/settings/settings";
+import SettingsMobile from "@/components/mobile/settings/settings";
 import SettingsDesktop from "@/components/desktop/settings/settings";
-import DesktopLayout from "@/components/desktop/layout/desktop-layout";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { ProtectedRoute } from "@/components/protected-route";
+import { ResponsiveLayout } from "@/components/responsive-layout";
 
 export default function SettingsPage() {
-  const isMobile = useIsMobile()
-
   return (
     <ProtectedRoute>
-      {isMobile ? (
-        <SettingsMobilePage />
-      ) : (
-        <DesktopLayout>
-          <SettingsDesktop />
-        </DesktopLayout>
-      )}
+      <ResponsiveLayout mobile={<SettingsMobile />} desktop={<SettingsDesktop/>} />
     </ProtectedRoute>
   )
 }

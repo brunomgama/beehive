@@ -15,9 +15,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useTheme } from "@/contexts/theme-context"
 import { BankAccount } from "@/lib/api/bank/accounts-api"
 import { getButtonStyle, getThemeButtonStyle } from "@/lib/themes"
-import { movementApi, MovementCategory, MovementStatus, MovementType } from "@/lib/api/bank/movements-api"
 import { CurrencyInput } from "@/lib/util/currency-input"
-import { suggestCategories, getAllCategories } from "@/lib/util/category-suggestions"
+import { suggestCategories, getAllCategories } from "@/lib/util/categories"
+import { MovementCategory, MovementStatus, MovementType } from "@/lib/api/types"
+import { movementApi } from "@/lib/api/bank/movements-api"
 
 interface AddMovementDrawerProps {
   open: boolean

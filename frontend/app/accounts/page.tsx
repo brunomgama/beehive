@@ -2,22 +2,13 @@
 
 import AccountsDesktop from '@/components/desktop/accounts/accounts'
 import AccountsMobile from '@/components/mobile/accounts/accounts'
-import DesktopLayout from '@/components/desktop/layout/desktop-layout'
-import { useIsMobile } from '@/hooks/use-mobile'
 import { ProtectedRoute } from '@/components/protected-route'
+import { ResponsiveLayout } from '@/components/responsive-layout'
 
 export default function AccountsPage() {
-  const isMobile = useIsMobile()
-
   return (
     <ProtectedRoute>
-      {isMobile ? (
-        <AccountsMobile />
-      ) : (
-        <DesktopLayout>
-          <AccountsDesktop />
-        </DesktopLayout>
-      )}
+      <ResponsiveLayout mobile={<AccountsMobile />} desktop={<AccountsDesktop />} />
     </ProtectedRoute>
   )
 }

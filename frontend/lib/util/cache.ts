@@ -1,12 +1,21 @@
+// ============================================================================
+// CACHE CONFIGURATION
+// ============================================================================
+const CACHE_DURATION = 48 * 60 * 60 * 1000 // 48 hours
+const STORAGE_PREFIX = 'beehive_cache_'
+
+// ============================================================================
+// CACHE TYPES
+// ============================================================================
 interface CacheEntry<T> {
   data: T
   timestamp: number
   expiresAt: number
 }
 
-const CACHE_DURATION = 48 * 60 * 60 * 1000
-const STORAGE_PREFIX = 'beehive_cache_'
-
+// ============================================================================
+// DATA CACHE CLASS
+// ============================================================================
 class DataCache {
   private memoryCache: Map<string, CacheEntry<any>> = new Map()
   private useStorage: boolean
@@ -23,6 +32,7 @@ class DataCache {
     
     let entry = this.memoryCache.get(key)
     
+    // Try to load from localStorage if not in memory
     if (!entry && this.useStorage) {
       try {
         const stored = localStorage.getItem(storageKey)
@@ -41,6 +51,7 @@ class DataCache {
       return null
     }
 
+    // Check if expired
     const now = Date.now()
     if (now > entry.expiresAt) {
       this.memoryCache.delete(key)
@@ -112,6 +123,7 @@ class DataCache {
       }
     })
 
+    // Check localStorage
     if (this.useStorage) {
       try {
         for (let i = 0; i < localStorage.length; i++) {
@@ -253,6 +265,9 @@ class DataCache {
     return entries
   }
 
+  /**
+   * Debug helper to log cache information
+   */
   debug(): void {
     console.group('🗄️ Cache Debug')
     const stats = this.getStats()
@@ -263,53 +278,40 @@ class DataCache {
   }
 }
 
+// ============================================================================
+// SINGLETON INSTANCE
+// ============================================================================
 export const dataCache = new DataCache()
 
+// Enable debug access in browser console
 if (typeof window !== 'undefined') {
   (window as any).__cache = dataCache
   console.log('💡 Cache debug available: Run __cache.debug() in console')
 }
 
-// Cache key builders for different data types
+// ============================================================================
+// CACHE KEY BUILDERS (TypeScript-safe)
+// ============================================================================
 export const CacheKeys = {
-  // Landing page - single endpoint
-  landingStats: (userId: number) => `landing:stats:${userId}`,
-  
-  // Legacy keys (can be removed after migration)
-  totalBalance: (userId: number) => `landing:total-balance:${userId}`,
-  monthIncome: (userId: number, year: number, month: number) => `landing:month-income:${userId}:${year}-${month}`,
-  monthExpenses: (userId: number, year: number, month: number) => `landing:month-expenses:${userId}:${year}-${month}`,
-  upcomingPlanned: (userId: number) => `landing:upcoming-planned:${userId}`,
-  balanceTrend: (userId: number) => `landing:balance-trend:${userId}`,
+  // Landing page
+  landingStats: (userId: number) => `landing:stats:${userId}` as const,
   
   // Patterns for invalidation
   patterns: {
     allLandingForUser: (userId: number) => new RegExp(`^landing:.*:${userId}`),
-    monthDataForUser: (userId: number, year: number, month: number) => 
-      new RegExp(`^landing:month.*:${userId}:${year}-${month}`),
-    balanceRelated: (userId: number) => 
-      new RegExp(`^landing:(total-balance|balance-trend|stats):${userId}`)
+    balanceRelated: (userId: number) => new RegExp(`^landing:(total-balance|balance-trend|stats):${userId}`)
   }
-}
+} as const
 
-// Cache invalidation helpers
+// ============================================================================
+// CACHE INVALIDATION HELPERS
+// ============================================================================
 export const invalidateCache = {
   /**
    * When a movement is created/updated/deleted
    * This affects: income, expenses, balance, and trend
    */
-  onMovementChange: (userId: number, movementType: 'INCOME' | 'EXPENSE', date: Date) => {
-    const year = date.getFullYear()
-    const month = date.getMonth() + 1
-    
-    // Invalidate the specific month data
-    if (movementType === 'INCOME') {
-      dataCache.invalidate(CacheKeys.monthIncome(userId, year, month))
-    } else {
-      dataCache.invalidate(CacheKeys.monthExpenses(userId, year, month))
-    }
-    
-    // Always invalidate balance-related caches
+  onMovementChange: (userId: number) => {
     dataCache.invalidatePattern(CacheKeys.patterns.balanceRelated(userId))
   },
 
@@ -318,10 +320,7 @@ export const invalidateCache = {
    * This affects: upcoming planned and balance trend
    */
   onPlannedMovementChange: (userId: number) => {
-    dataCache.invalidate(
-      CacheKeys.upcomingPlanned(userId),
-      CacheKeys.balanceTrend(userId)
-    )
+    dataCache.invalidatePattern(CacheKeys.patterns.balanceRelated(userId))
   },
 
   /**

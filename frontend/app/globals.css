@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 /* ==========================================================================
-   Base Styles & CSS Variables
-   ========================================================================== */
+  CSS Custom Properties (Theme Variables)
+========================================================================== */
 
 :root {
   /* Font Families */
@@ -10,162 +10,176 @@
   --font-body: var(--font-sf-text), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --font-mono: "SF Mono", "Monaco", "Cascadia Code", "Courier New", monospace;
 
+  /* Border Radius */
+  --radius: 0.75rem; /* 12px */
+
   /* Light Mode - Clean & Professional */
-  --background: #FFFFFF;                      /* Pure white */
-  --foreground: #0A0A0A;                      /* Almost black */
-  --card: #FFFFFF;                            /* White cards */
-  --card-foreground: #0A0A0A;            
-  --popover: #FFFFFF;                       
-  --popover-foreground: #0A0A0A;         
-  --primary: #FF6B35;                         /* Vibrant orange */
-  --primary-foreground: #FFFFFF;              /* White text */
-  --primary-hover: #FF5722;                   /* Darker orange on hover */
-  --secondary: #F5F5F5;                       /* Light gray */
-  --secondary-foreground: #171717;       
-  --muted: #F5F5F5;                           /* Subtle gray */
-  --muted-foreground: #737373;         
-  --accent: #F5F5F5;                   
-  --accent-foreground: #171717;          
-  --destructive: #EF4444;                     /* Red */
-  --destructive-foreground: #FAFAFA;         
-  --border: #E5E5E5;                          /* Soft gray border */
-  --input: #E5E5E5;                      
-  --ring: #FF6B35;                            /* Orange ring */
-  --radius: 0.75rem;                          /* 12px */
-
-  /* Surface Colors */
-  --surface: #FFFFFF;                       
-  --surface-elevated: #FAFAFA;               
-  --border-strong: #D4D4D4;              
-
-  /* Text Colors */
-  --text-primary: #0A0A0A;               
-  --text-secondary: #525252;               
-  --text-tertiary: #737373;                
-
-  /* Interactive States */
-  --interactive-hover: #F5F5F5;        
-  --interactive-active: #E5E5E5;         
-
-  /* Success & Income */
-  --success: #22C55E;                         /* Green */
-  --success-foreground: #FFFFFF;            
-
-  /* OK/NOK Colors - Pastel */
-  --ok: #86EFAC;                              /* Pastel green */
-  --ok-foreground: #166534;                   /* Dark green text */
-  --nok: #FCA5A5;                             /* Pastel red */
-  --nok-foreground: #991B1B;                  /* Dark red text */
-
-  /* Card Darker - slightly darker than background */
+  --background: #FFFFFF;
+  --foreground: #0A0A0A;
+  --card: #FFFFFF;
   --card-darker: #F5F5F5;
-
+  --card-foreground: #0A0A0A;
+  --popover: #FFFFFF;
+  --popover-foreground: #0A0A0A;
+  
+  /* Primary Colors */
+  --primary: #FF6B35;
+  --primary-foreground: #FFFFFF;
+  --primary-hover: #FF5722;
+  
+  /* Secondary Colors */
+  --secondary: #F5F5F5;
+  --secondary-foreground: #171717;
+  
+  /* Muted Colors */
+  --muted: #F5F5F5;
+  --muted-foreground: #737373;
+  
+  /* Accent Colors */
+  --accent: #F5F5F5;
+  --accent-foreground: #171717;
+  
+  /* Status Colors */
+  --destructive: #EF4444;
+  --destructive-foreground: #FAFAFA;
+  --success: #22C55E;
+  --success-foreground: #FFFFFF;
+  
+  /* OK/NOK Pastel Colors */
+  --ok: #86EFAC;
+  --ok-foreground: #166534;
+  --nok: #FCA5A5;
+  --nok-foreground: #991B1B;
+  
+  /* Borders & Inputs */
+  --border: #E5E5E5;
+  --border-strong: #D4D4D4;
+  --input: #E5E5E5;
+  --ring: #FF6B35;
+  
+  /* Surface Colors */
+  --surface: #FFFFFF;
+  --surface-elevated: #FAFAFA;
+  
+  /* Text Colors */
+  --text-primary: #0A0A0A;
+  --text-secondary: #525252;
+  --text-tertiary: #737373;
+  
+  /* Interactive States */
+  --interactive-hover: #F5F5F5;
+  --interactive-active: #E5E5E5;
+  
   /* Shadow */
-  --shadow-color: #0A0A0A;               
+  --shadow-color: #0A0A0A;
   --shadow-strength: 0.05;
 }
 
 /* Dark Mode - Premium & Modern */
 .dark {
-  --background: #2A2A2A;                      /* Rich dark */
-  --foreground: #FAFAFA;                      /* Off-white */
-  --card: #1A1A1A;                            /* Slightly lighter dark */
-  --card-foreground: #FAFAFA;                
-  --popover: #1A1A1A;                      
-  --popover-foreground: #FAFAFA;             
-  --primary: #FF6B35;                         /* Vibrant orange */
-  --primary-foreground: #FFFFFF;
-  --primary-hover: #FF5722;            
-  --secondary: #262626;                       /* Dark gray */
-  --secondary-foreground: #FAFAFA;           
-  --muted: #262626;                    
-  --muted-foreground: #A3A3A3;           
-  --accent: #262626;                   
-  --accent-foreground: #FAFAFA;              
-  --destructive: #EF4444;               
-  --destructive-foreground: #FAFAFA;         
-  --border: #262626;                   
-  --input: #262626;                    
-  --ring: #FF6B35;                         
-
-  --surface: #1A1A1A;                      
-  --surface-elevated: #242424;             
-  --border-strong: #333333;              
-
-  --text-primary: #FAFAFA;                   
-  --text-secondary: #A3A3A3;             
-  --text-tertiary: #737373;                
-
-  --interactive-hover: #262626;        
-  --interactive-active: #333333;         
-
-  --success: #22C55E;                     
-  --success-foreground: #FFFFFF;            
-
-  /* OK/NOK Colors - Pastel */
-  --ok: #86EFAC;                              /* Pastel green */
-  --ok-foreground: #166534;                   /* Dark green text */
-  --nok: #FCA5A5;                             /* Pastel red */
-  --nok-foreground: #991B1B;                  /* Dark red text */
-
-  /* Card Darker - slightly darker than background */
+  --background: #2A2A2A;
+  --foreground: #FAFAFA;
+  --card: #1A1A1A;
   --card-darker: #1A1A1A;
-
+  --card-foreground: #FAFAFA;
+  --popover: #1A1A1A;
+  --popover-foreground: #FAFAFA;
+  
+  --primary: #FF6B35;
+  --primary-foreground: #FFFFFF;
+  --primary-hover: #FF5722;
+  
+  --secondary: #262626;
+  --secondary-foreground: #FAFAFA;
+  
+  --muted: #262626;
+  --muted-foreground: #A3A3A3;
+  
+  --accent: #262626;
+  --accent-foreground: #FAFAFA;
+  
+  --destructive: #EF4444;
+  --destructive-foreground: #FAFAFA;
+  --success: #22C55E;
+  --success-foreground: #FFFFFF;
+  
+  --ok: #86EFAC;
+  --ok-foreground: #166534;
+  --nok: #FCA5A5;
+  --nok-foreground: #991B1B;
+  
+  --border: #262626;
+  --border-strong: #333333;
+  --input: #262626;
+  --ring: #FF6B35;
+  
+  --surface: #1A1A1A;
+  --surface-elevated: #242424;
+  
+  --text-primary: #FAFAFA;
+  --text-secondary: #A3A3A3;
+  --text-tertiary: #737373;
+  
+  --interactive-hover: #262626;
+  --interactive-active: #333333;
+  
   --shadow-strength: 0.3;
 }
 
 /* Orange Mode - Sophisticated Warmth */
 .orange {
-  --background: #FAF6F1;                      /* Warm off-white */
-  --foreground: #2D1F17;                      /* Warm dark brown */
-  --card: #FFFFFF;                            /* Pure white cards */
-  --card-foreground: #2D1F17;              
-  --popover: #FFFFFF;                       
-  --popover-foreground: #2D1F17;           
-  --primary: #FF8C42;                         /* Warm coral */
-  --primary-foreground: #FFFFFF;
-  --primary-hover: #FF7629;            
-  --secondary: #F0E9E1;                       /* Soft warm gray */
-  --secondary-foreground: #2D1F17;         
-  --muted: #F5F0EB;                           /* Very light warm gray */
-  --muted-foreground: #6B5D52;             
-  --accent: #F0E9E1;                       
-  --accent-foreground: #2D1F17;            
-  --destructive: #EF4444;               
-  --destructive-foreground: #FAFAFA;         
-  --border: #E8DED0;                          /* Warm border */
-  --input: #E8DED0;                        
-  --ring: #FF8C42;                         
-
-  --surface: #FFFFFF;                       
-  --surface-elevated: #FFFBF7;             
-  --border-strong: #DFD1BF;                
-
-  --text-primary: #2D1F17;                 
-  --text-secondary: #5C4D41;               
-  --text-tertiary: #7A6B5F;                
-
-  --interactive-hover: #F7F2ED;            
-  --interactive-active: #E8DED0;           
-
-  --success: #22C55E;                     
-  --success-foreground: #FFFFFF;            
-
-  /* OK/NOK Colors - Pastel */
-  --ok: #86EFAC;                              /* Pastel green */
-  --ok-foreground: #166534;                   /* Dark green text */
-  --nok: #FCA5A5;                             /* Pastel red */
-  --nok-foreground: #991B1B;                  /* Dark red text */
-
-  /* Card Darker - slightly darker than background */
+  --background: #FAF6F1;
+  --foreground: #2D1F17;
+  --card: #FFFFFF;
   --card-darker: #F0E9E1;
-
+  --card-foreground: #2D1F17;
+  --popover: #FFFFFF;
+  --popover-foreground: #2D1F17;
+  
+  --primary: #FF8C42;
+  --primary-foreground: #FFFFFF;
+  --primary-hover: #FF7629;
+  
+  --secondary: #F0E9E1;
+  --secondary-foreground: #2D1F17;
+  
+  --muted: #F5F0EB;
+  --muted-foreground: #6B5D52;
+  
+  --accent: #F0E9E1;
+  --accent-foreground: #2D1F17;
+  
+  --destructive: #EF4444;
+  --destructive-foreground: #FAFAFA;
+  --success: #22C55E;
+  --success-foreground: #FFFFFF;
+  
+  --ok: #86EFAC;
+  --ok-foreground: #166534;
+  --nok: #FCA5A5;
+  --nok-foreground: #991B1B;
+  
+  --border: #E8DED0;
+  --border-strong: #DFD1BF;
+  --input: #E8DED0;
+  --ring: #FF8C42;
+  
+  --surface: #FFFFFF;
+  --surface-elevated: #FFFBF7;
+  
+  --text-primary: #2D1F17;
+  --text-secondary: #5C4D41;
+  --text-tertiary: #7A6B5F;
+  
+  --interactive-hover: #F7F2ED;
+  --interactive-active: #E8DED0;
+  
   --shadow-strength: 0.08;
 }
 
 /* ==========================================================================
-   Base Element Styles
-   ========================================================================== */
+  Base Element Styles
+========================================================================== */
 
 * {
   border-color: var(--border);
@@ -186,8 +200,8 @@ body {
 }
 
 /* ==========================================================================
-   Typography Utilities
-   ========================================================================== */
+  Typography Utilities
+========================================================================== */
 
 .text-display-1 {
   font-family: var(--font-display);
@@ -243,9 +257,24 @@ body {
   color: var(--destructive);
 }
 
+/* Tailwind Layer for Font Family Utilities */
+@layer utilities {
+  .font-body {
+    font-family: var(--font-body);
+  }
+  
+  .font-display {
+    font-family: var(--font-display);
+  }
+  
+  .font-mono {
+    font-family: var(--font-mono);
+  }
+}
+
 /* ==========================================================================
-   Card Components
-   ========================================================================== */
+  Card Components
+========================================================================== */
 
 .card-standard {
   background: var(--card);
@@ -280,8 +309,8 @@ body {
 }
 
 /* ==========================================================================
-   Interaction States
-   ========================================================================== */
+  Interaction States
+========================================================================== */
 
 .hover-lift {
   transition: transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94),
@@ -298,8 +327,8 @@ body {
 }
 
 /* ==========================================================================
-   Glass Effects
-   ========================================================================== */
+  Glass Effects
+========================================================================== */
 
 .glass-subtle {
   background: color-mix(in srgb, var(--card) 70%, transparent);
@@ -309,8 +338,8 @@ body {
 }
 
 /* ==========================================================================
-   Scrollbar Styling
-   ========================================================================== */
+  Scrollbar Styling
+========================================================================== */
 
 .scrollbar-hide {
   -ms-overflow-style: none;
@@ -340,8 +369,8 @@ body {
 }
 
 /* ==========================================================================
-   Selection & Focus
-   ========================================================================== */
+  Selection & Focus
+========================================================================== */
 
 ::selection {
   background-color: color-mix(in srgb, var(--primary) 20%, transparent);
@@ -354,8 +383,8 @@ body {
 }
 
 /* ==========================================================================
-   Animations
-   ========================================================================== */
+  Animations
+========================================================================== */
 
 @keyframes fadeIn {
   from { opacity: 0; }
@@ -394,8 +423,8 @@ body {
 }
 
 /* ==========================================================================
-   Utility Classes
-   ========================================================================== */
+  Utility Classes
+========================================================================== */
 
 .text-gradient-primary {
   background: linear-gradient(135deg, 
@@ -404,6 +433,14 @@ body {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.pt-safe {
+  padding-top: env(safe-area-inset-top);
 }
 
 .safe-area-bottom {

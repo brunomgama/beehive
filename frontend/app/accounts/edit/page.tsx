@@ -1,28 +1,15 @@
 'use client'
 
-import { Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import AccountEditDesktop from '@/components/desktop/accounts/edit-account'
-import DesktopLayout from '@/components/desktop/layout/desktop-layout'
 import { ProtectedRoute } from '@/components/protected-route'
+import { ResponsiveLayout } from '@/components/responsive-layout'
 
-function EditAccountContent() {
-  const searchParams = useSearchParams()
-  const accountId = searchParams.get('id')
-
+export default function EditAccountContent() {
+  const accountId = useSearchParams().get('id')
   return (
     <ProtectedRoute>
-      <DesktopLayout>
-        <AccountEditDesktop accountId={accountId ? parseInt(accountId) : null} />
-      </DesktopLayout>
+      <ResponsiveLayout mobile={<></>} desktop={<AccountEditDesktop accountId={accountId ? parseInt(accountId) : null}/>} />
     </ProtectedRoute>
-  )
-}
-
-export default function EditAccountPage() {
-  return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
-      <EditAccountContent />
-    </Suspense>
   )
 }

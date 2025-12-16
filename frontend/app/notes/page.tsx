@@ -1,18 +1,13 @@
 'use client'
 
 import { NotesMobile } from '@/components/mobile/notes/notes'
-import { useIsMobile } from '@/hooks/use-mobile'
+import { ProtectedRoute } from '@/components/protected-route'
+import { ResponsiveLayout } from '@/components/responsive-layout'
 
 export default function Notes() {
-  const isMobile = useIsMobile()
-
   return (
-    <>
-      {isMobile ? (
-        <NotesMobile />
-      ) : (
-        <></>
-      )}
-    </>
+    <ProtectedRoute>
+      <ResponsiveLayout mobile={<NotesMobile />} desktop={<></>} />
+    </ProtectedRoute>
   )
 }

@@ -1,4 +1,4 @@
-import { API_ENDPOINTS } from "../../api-config"
+import { API_ENDPOINTS } from "../api-config"
 import { apiService } from "../api-service"
 
 export interface UserSession {

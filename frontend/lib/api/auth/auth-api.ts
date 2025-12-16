@@ -1,4 +1,4 @@
-import { API_ENDPOINTS } from "../../api-config"
+import { API_ENDPOINTS } from "../api-config"
 import { apiService } from "../api-service"
 
 export interface LoginData {
@@ -56,7 +56,7 @@ export const authApi = {
     }
 
     const data = await response.json()
-    console.log('Raw API response:', data) // Debug log
+    console.log('Raw API response:', data)
     return {
       id: data.id,
       username: data.username,

@@ -4,12 +4,11 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Plus, Edit2, Trash2, TrendingUp } from "lucide-react"
 import { useAuth } from "@/contexts/auth-context"
-import { getCardGradient } from "@/lib/util/credit_card"
 import { Button } from "@/components/ui/button"
-import { formatBalance } from "@/lib/util/converter"
 import { BankAccount, bankAccountApi } from "@/lib/api/bank/accounts-api"
 import { getButtonStyle } from "@/lib/themes"
 import { useTheme } from "@/contexts/theme-context"
+import { formatBalance, getCardGradient } from "@/lib/util/utils"
 
 export default function AccountsDesktop() {
   const router = useRouter()

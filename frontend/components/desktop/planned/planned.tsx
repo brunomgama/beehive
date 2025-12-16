@@ -1,95 +1,40 @@
 'use client'
 
-import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { Plus, Search, Filter, MoreVertical, Edit2, Trash2, Eye, ArrowUpRight, ArrowDownRight, Calendar, Clock, Repeat } from "lucide-react"
-import { useAuth } from "@/contexts/auth-context"
+import { Plus, Search, Filter, MoreVertical, Edit2, Trash2, ArrowUpRight, ArrowDownRight, Calendar, Clock, Repeat } from "lucide-react"
 import { format } from "date-fns"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from "@/components/ui/dropdown-menu"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter} from "@/components/ui/table"
-import { BankAccount, bankAccountApi } from "@/lib/api/bank/accounts-api"
-import { formatBalance } from "@/lib/util/converter"
-import { MovementRecurrence, PlannedMovement, plannedMovementApi } from "@/lib/api/bank/planned-api"
-import { MovementType } from "@/lib/api/bank/movements-api"
+import { formatBalance } from "@/lib/util/utils"
 import { useTheme } from "@/contexts/theme-context"
 import { getButtonStyle } from "@/lib/themes"
+import { usePlannedList } from "@/hooks/planned/use-planned-list"
 
 export default function PlannedMovementsDesktop() {
-  const { user } = useAuth()
   const router = useRouter()
   const { theme } = useTheme()
-  const [plannedMovements, setPlannedMovements] = useState<PlannedMovement[]>([])
-  const [accounts, setAccounts] = useState<BankAccount[]>([])
-  const [loading, setLoading] = useState(true)
-  const [searchQuery, setSearchQuery] = useState('')
-  const [filterType, setFilterType] = useState<'ALL' | MovementType>('ALL')
-  const [filterRecurrence, setFilterRecurrence] = useState<'ALL' | MovementRecurrence>('ALL')
-  const [filterAccount, setFilterAccount] = useState<number | null>(null)
+  const {
+    plannedMovements,
+    accounts,
+    loading,
+    searchQuery,
+    setSearchQuery,
+    filterType,
+    setFilterType,
+    filterRecurrence,
+    setFilterRecurrence,
+    filterAccount,
+    setFilterAccount,
+    stats,
+    handleDelete,
+  } = usePlannedList()
 
-  useEffect(() => {
-    fetchData()
-  }, [user?.id])
-
-  const fetchData = async () => {
-    if (!user?.id) return
-    
-    try {
-      setLoading(true)
-      const accountsResult = await bankAccountApi.getByUserId(user.id)
-      if (accountsResult.data) {
-        setAccounts(accountsResult.data)
-        
-        const allPlannedMovements: PlannedMovement[] = []
-        for (const account of accountsResult.data) {
-          if (account.id) {
-            const plannedResult = await plannedMovementApi.getByAccountId(account.id)
-            if (plannedResult.data) {
-              allPlannedMovements.push(...plannedResult.data)
-            }
-          }
-        }
-        setPlannedMovements(allPlannedMovements.sort((a, b) => 
-          new Date(a.nextExecution).getTime() - new Date(b.nextExecution).getTime()
-        ))
-      }
-    } catch (error) {
-      console.error('Error fetching data:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleDelete = async (plannedMovementId: number) => {
+  const onDelete = async (plannedId: number) => {
     if (!confirm('Are you sure you want to delete this planned transaction?')) return
-    
-    try {
-      await plannedMovementApi.delete(plannedMovementId)
-      await fetchData()
-    } catch (error) {
-      console.error('Error deleting planned movement:', error)
-      alert('Failed to delete planned transaction')
-    }
-  }
-
-  const filteredPlannedMovements = plannedMovements.filter(movement => {
-    const matchesSearch = movement.description.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchesType = filterType === 'ALL' || movement.type === filterType
-    const matchesRecurrence = filterRecurrence === 'ALL' || movement.recurrence === filterRecurrence
-    const matchesAccount = !filterAccount || movement.accountId === filterAccount
-    return matchesSearch && matchesType && matchesRecurrence && matchesAccount
-  })
-
-  const stats = {
-    total: filteredPlannedMovements.length,
-    active: filteredPlannedMovements.filter(m => m.status === 'PENDING' || m.status === 'CONFIRMED').length,
-    monthlyIncome: filteredPlannedMovements
-      .filter(m => m.type === 'INCOME' && m.recurrence === 'MONTHLY')
-      .reduce((sum, m) => sum + m.amount, 0),
-    monthlyExpenses: filteredPlannedMovements
-      .filter(m => m.type === 'EXPENSE' && m.recurrence === 'MONTHLY')
-      .reduce((sum, m) => sum + Math.abs(m.amount), 0),
+    const success = await handleDelete(plannedId)
+    if (!success) alert('Failed to delete planned transaction')
   }
 
   if (loading) {
@@ -125,7 +70,6 @@ export default function PlannedMovementsDesktop() {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-4 gap-6 mb-6">
-          {/* Total Planned */}
           <div className="rounded-xl border border-border bg-background p-6 shadow-sm">
             <div className="flex items-center gap-2 mb-2">
               <div className="w-2 h-2 rounded-full bg-blue-500"></div>
@@ -134,7 +78,6 @@ export default function PlannedMovementsDesktop() {
             <p className="text-3xl font-bold text-foreground">{stats.total}</p>
           </div>
 
-          {/* Active */}
           <div className="rounded-xl border border-border bg-background p-6 shadow-sm">
             <div className="flex items-center gap-2 mb-2">
               <div className="w-2 h-2 rounded-full bg-purple-500"></div>
@@ -143,7 +86,6 @@ export default function PlannedMovementsDesktop() {
             <p className="text-3xl font-bold text-purple-600">{stats.active}</p>
           </div>
 
-          {/* Monthly Income */}
           <div className="rounded-xl border border-border bg-background p-6 shadow-sm">
             <div className="flex items-center gap-2 mb-2">
               <div className="w-2 h-2 rounded-full bg-green-500"></div>
@@ -152,7 +94,6 @@ export default function PlannedMovementsDesktop() {
             <p className="text-3xl font-bold text-green-600">+{formatBalance(stats.monthlyIncome)}</p>
           </div>
 
-          {/* Monthly Expenses */}
           <div className="rounded-xl border border-border bg-background p-6 shadow-sm">
             <div className="flex items-center gap-2 mb-2">
               <div className="w-2 h-2 rounded-full bg-red-500"></div>
@@ -164,7 +105,6 @@ export default function PlannedMovementsDesktop() {
 
         {/* Filters & Search */}
         <div className="rounded-full border border-border bg-background p-2 shadow-sm flex items-center gap-2">
-          {/* Search */}
           <div className="flex-1 relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={20} />
             <Input
@@ -175,7 +115,6 @@ export default function PlannedMovementsDesktop() {
             />
           </div>
 
-          {/* Type Filter */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="rounded-full px-4 hover:bg-muted">
@@ -190,11 +129,10 @@ export default function PlannedMovementsDesktop() {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          {/* Recurrence Filter */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="rounded-full px-4 hover:bg-muted">
-                <Repeat size={16} className="mr-2" />
+                <Filter size={16} className="mr-2" />
                 {filterRecurrence}
               </Button>
             </DropdownMenuTrigger>
@@ -203,11 +141,10 @@ export default function PlannedMovementsDesktop() {
               <DropdownMenuItem onClick={() => setFilterRecurrence('DAILY')}>Daily</DropdownMenuItem>
               <DropdownMenuItem onClick={() => setFilterRecurrence('WEEKLY')}>Weekly</DropdownMenuItem>
               <DropdownMenuItem onClick={() => setFilterRecurrence('MONTHLY')}>Monthly</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setFilterRecurrence('CUSTOM')}>Custom</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setFilterRecurrence('YEARLY')}>Yearly</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
 
-          {/* Account Filter */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="rounded-full px-4 hover:bg-muted">
@@ -225,8 +162,7 @@ export default function PlannedMovementsDesktop() {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          {/* Search Button */}
-          <Button size="icon" className={`rounded-full bg-gradient-to-r from-amber-400 ${getButtonStyle(theme)}`}>
+          <Button size="icon" className={`rounded-full ${getButtonStyle(theme)}`}>
             <Search size={20} />
           </Button>
         </div>
@@ -250,7 +186,7 @@ export default function PlannedMovementsDesktop() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredPlannedMovements.map((movement) => {
+              {plannedMovements.map((movement) => {
                 const account = accounts.find(a => a.id === movement.accountId)
                 
                 return (
@@ -325,16 +261,12 @@ export default function PlannedMovementsDesktop() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => router.push(`/bank/schedule/${movement.id}`)}>
-                            <Eye size={16} className="mr-2" />
-                            View Details
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => router.push(`/bank/schedule/${movement.id}/edit`)}>
+                          <DropdownMenuItem onClick={() => router.push(`/planned/${movement.id}/edit`)}>
                             <Edit2 size={16} className="mr-2" />
                             Edit
                           </DropdownMenuItem>
                           <DropdownMenuItem 
-                            onClick={() => handleDelete(movement.id!)}
+                            onClick={() => onDelete(movement.id!)}
                             className="text-destructive focus:text-destructive"
                           >
                             <Trash2 size={16} className="mr-2" />
@@ -360,20 +292,20 @@ export default function PlannedMovementsDesktop() {
             </TableFooter>
           </Table>
           <p className="mt-4 text-center text-sm text-muted-foreground">
-            Showing {filteredPlannedMovements.length} of {plannedMovements.length} planned transactions
+            Showing {plannedMovements.length} planned transaction{plannedMovements.length !== 1 ? 's' : ''}
           </p>
         </div>
 
         {/* Empty State */}
-        {filteredPlannedMovements.length === 0 && (
+        {plannedMovements.length === 0 && (
           <div className="text-center py-12">
             <Repeat size={48} className="mx-auto text-muted-foreground mb-4" />
             <p className="text-lg text-muted-foreground mb-2">No planned transactions found</p>
             <p className="text-sm text-muted-foreground mb-4">
               Create recurring transactions to automate your finances
             </p>
-            <Button onClick={() => router.push('/bank/schedule/new')}
-              className="bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-white">
+            <Button onClick={() => router.push('/planned/add')}
+              className={getButtonStyle(theme)}>
               <Plus size={16} className="mr-2" />
               Create Your First Planned Transaction
             </Button>

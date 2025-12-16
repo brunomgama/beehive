@@ -1,3 +1,14 @@
+import { MovementCategory } from "../api/types"
+import { 
+  ShoppingCart, Wifi, Laptop, Coffee, Car, Music, Heart, Zap, GraduationCap, Tv, MoreHorizontal, 
+  Home, Wrench, Shield, Sofa, Fuel, Bus, CarFront, ParkingCircle, Receipt, Shirt, Smartphone, 
+  Gift, Sparkles, ShoppingBasket, UtensilsCrossed, Pizza, Wine, Film, Calendar, Gamepad2, Moon, Dumbbell, 
+  Code, Globe, Phone, Droplet, Lightbulb, Flame, Briefcase, Plane, FileText, GraduationCap as Book, 
+  Building2, CreditCard, Play, HeadphonesIcon, Cloud, Newspaper, Hotel, 
+  Map, Wallet, TrendingUp, RotateCcw, HomeIcon, PawPrint, Syringe, Stethoscope, Users, PillBottle, 
+  ArrowsUpFromLine
+} from 'lucide-react'
+
 export interface IconMapping {
   keywords: string[]
   iconPath: string
@@ -330,4 +341,134 @@ export function addIconMapping(mapping: IconMapping): void {
  */
 export function getAllIconMappings(): IconMapping[] {
   return [...MOVEMENT_ICON_MAPPINGS]
+}
+
+export const CATEGORY_ICONS: Record<MovementCategory, React.ComponentType<{ className?: string }>> = {
+  TRANSFER: ArrowsUpFromLine,
+  // Housing
+  RENT: Home,
+  PROPERTY_TAXES: Building2,
+  HOME_MAINTENANCE_REPAIRS: Wrench,
+  HOME_INSURANCE: Shield,
+  HOUSEHOLD_SUPPLIES_FURNITURE: Sofa,
+  
+  // Transportation
+  FUEL: Fuel,
+  PUBLIC_TRANSPORT: Bus,
+  UBER: Car,
+  CAR_MAINTENANCE: CarFront,
+  PARKING: ParkingCircle,
+  VEHICLE_INSURANCE: Shield,
+  TOLLS: Receipt,
+  
+  // Shopping
+  SHOPPING: ShoppingCart,
+  CLOTHING: Shirt,
+  ELECTRONICS: Smartphone,
+  GIFTS: Gift,
+  BEAUTY_COSMETICS: Sparkles,
+  
+  // Food & Dining
+  GROCERIES: ShoppingBasket,
+  RESTAURANTS: UtensilsCrossed,
+  FAST_FOOD: Pizza,
+  COFFEE_SHOPS: Coffee,
+  ALCOHOL_BARS: Wine,
+  FOOD_DRINKS: Coffee,
+  
+  // Entertainment
+  ENTERTAINMENT: Music,
+  MOVIES: Film,
+  EVENTS: Calendar,
+  GAMES: Gamepad2,
+  NIGHTLIFE: Moon,
+  HOBBIES: Music,
+  GYM: Dumbbell,
+  
+  // Technology
+  TECH: Laptop,
+  SOFTWARE_SUBSCRIPTIONS: Code,
+  INTERNET_SERVICES: Globe,
+  MOBILE_PHONE_PLANS: Phone,
+  NET: Wifi,
+  
+  // Utilities
+  UTILITIES: Zap,
+  WATER: Droplet,
+  ELECTRICITY: Lightbulb,
+  GAS: Flame,
+  
+  // Business
+  OFFICE_SUPPLIES: Briefcase,
+  BUSINESS_TRAVEL: Plane,
+  PROFESSIONAL_SERVICES: FileText,
+  
+  // Education
+  EDUCATION: GraduationCap,
+  ONLINE_COURSES: Book,
+  CLASSES: Users,
+  
+  // Insurance
+  HEALTH_INSURANCE: Shield,
+  CAR_INSURANCE: Shield,
+  LIFE_INSURANCE: Shield,
+  TRAVEL_INSURANCE: Shield,
+  
+  // Health
+  HEALTH: Heart,
+  PHARMACY: PillBottle,
+  MEDICAL: Stethoscope,
+  THERAPY: Users,
+  
+  // Pets
+  PET_FOOD: PawPrint,
+  VET_VISITS: Syringe,
+  PET_ACCESSORIES: PawPrint,
+  PET_GROOMING: Sparkles,
+  
+  // Financial
+  BANK_FEES: CreditCard,
+  INVESTMENTS: TrendingUp,
+  
+  // Streaming
+  STREAMING_SERVICES: Tv,
+  VIDEO_STREAMING: Play,
+  MUSIC_STREAMING: HeadphonesIcon,
+  CLOUD_STORAGE: Cloud,
+  DIGITAL_MAGAZINES: Newspaper,
+  NEWS_SUBSCRIPTIONS: Newspaper,
+  
+  // Travel
+  HOTELS: Hotel,
+  FLIGHTS: Plane,
+  CAR_RENTAL: Car,
+  TOURS: Map,
+  
+  // Income
+  SALARY: Wallet,
+  FREELANCING: Briefcase,
+  INVESTMENT_INCOME: TrendingUp,
+  REFUNDS: RotateCcw,
+  RENTAL_INCOME: HomeIcon,
+  
+  // Other
+  OTHER: MoreHorizontal,
+}
+
+/**
+ * Get icon component for a category
+ */
+export function getCategoryIcon(category: MovementCategory) {
+  return CATEGORY_ICONS[category] || MoreHorizontal
+}
+
+/**
+ * Render category icon with optional size
+ */
+export function CategoryIcon({ category, className = "w-5 h-5" }: { 
+  category: MovementCategory
+  className?: string 
+}) {
+  const Icon = getCategoryIcon(category)
+  return <Icon className={className} />
 }

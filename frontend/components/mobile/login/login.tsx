@@ -1,29 +1,33 @@
 'use client'
 
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Eye, EyeOff, ArrowRight } from "lucide-react"
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { useState, useEffect } from 'react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Eye, EyeOff, ArrowRight } from 'lucide-react'
+import { useLogin } from '@/hooks/login/use-login'
 
-interface LoginProps {
-  handleSubmit: (e: React.FormEvent) => Promise<void>
-  formData: { username: string; password: string }
-  handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void
-  error: string
-  isLoading: boolean
-  showPassword: boolean
-  setShowPassword: (value: boolean | ((prev: boolean) => boolean)) => void
-}
-
-export function LoginMobile({ handleSubmit, formData, handleChange, error, isLoading, showPassword, setShowPassword }: LoginProps) {
+/**
+ * Login Mobile Component
+ * Beautiful mobile login with video background
+ */
+export function LoginMobile() {
   const [mounted, setMounted] = useState(false)
+  
+  const {
+    formData,
+    error,
+    isLoading,
+    showPassword,
+    setShowPassword,
+    handleChange,
+    handleSubmit,
+  } = useLogin()
 
+  // Prevent scrolling on mobile
   useEffect(() => {
     setMounted(true)
-    
-    // Prevent scrolling
     document.body.style.overflow = 'hidden'
     document.body.style.position = 'fixed'
     document.body.style.width = '100%'
@@ -45,16 +49,15 @@ export function LoginMobile({ handleSubmit, formData, handleChange, error, isLoa
       {/* Top Section - Character Display */}
       <div className="flex-1 flex items-center justify-center bg-gradient-to-b from-[#FFE5D9] to-[#FFD5C8] relative overflow-hidden rounded-b-[2rem]">
         
-        {/* Soft background elements */}
+        {/* Background Elements */}
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute top-10 left-10 w-64 h-64 bg-orange-200/30 rounded-full blur-3xl" />
           <div className="absolute bottom-10 right-10 w-80 h-80 bg-orange-300/20 rounded-full blur-3xl" />
         </div>
         
-        {/* Video Container - Circular like the reference */}
+        {/* Video Container */}
         <div className="relative z-10 flex items-center justify-center p-8">
           <div className="relative">
-            {/* Circular container for video */}
             <div className="w-[15rem] h-[15rem] rounded-full overflow-hidden bg-white/50 backdrop-blur-sm shadow-2xl shadow-black/10 flex items-center justify-center">
               <video autoPlay loop muted playsInline className="w-full h-full object-cover scale-110">
                 <source src="/videos/choose_character.mp4" type="video/mp4" />
@@ -62,11 +65,10 @@ export function LoginMobile({ handleSubmit, formData, handleChange, error, isLoa
               </video>
             </div>
             
-            {/* Decorative curl/line on top (like the reference) */}
+            {/* Decorative Line */}
             <div className="absolute -top-8 left-1/2 -translate-x-1/2">
-              <svg width="60" height="40" viewBox="0 0 60 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M 5 35 Q 10 5 30 10 Q 50 15 55 5" stroke="#2A2A2A" strokeWidth="3" 
-                strokeLinecap="round" fill="none" className="animate-draw-line"/>
+              <svg width="60" height="40" viewBox="0 0 60 40" fill="none">
+                <path d="M 5 35 Q 10 5 30 10 Q 50 15 55 5" stroke="#2A2A2A" strokeWidth="3" strokeLinecap="round" fill="none" className="animate-draw-line"/>
               </svg>
             </div>
           </div>
@@ -86,18 +88,24 @@ export function LoginMobile({ handleSubmit, formData, handleChange, error, isLoa
         {/* Login Form */}
         <form onSubmit={handleSubmit} className="space-y-5 max-w-md mx-auto w-full">
           
-          {/* Username Field */}
+          {/* Username */}
           <div className="space-y-2">
             <Label htmlFor="username" className="text-sm font-semibold text-gray-300">
               Username
             </Label>
-            <Input id="username" name="username" type="text" required value={formData.username} onChange={handleChange}
-              placeholder="Enter your username" className="h-14 bg-white/10 border-2 border-white/20 text-white 
-              placeholder:text-gray-500 rounded-2xl focus:border-[#FFB380] focus:ring-4 focus:ring-[#FFB380]/20 
-              transition-all font-medium backdrop-blur-sm"/>
+            <Input 
+              id="username" 
+              name="username" 
+              type="text" 
+              required 
+              value={formData.username} 
+              onChange={handleChange}
+              placeholder="Enter your username" 
+              className="h-14 bg-white/10 border-2 border-white/20 text-white placeholder:text-gray-500 rounded-2xl focus:border-[#FFB380] focus:ring-4 focus:ring-[#FFB380]/20 transition-all font-medium backdrop-blur-sm"
+            />
           </div>
 
-          {/* Password Field */}
+          {/* Password */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label htmlFor="password" className="text-sm font-semibold text-gray-300">
@@ -108,12 +116,22 @@ export function LoginMobile({ handleSubmit, formData, handleChange, error, isLoa
               </Link>
             </div>
             <div className="relative">
-              <Input id="password" name="password" type={showPassword ? "text" : "password"} required value={formData.password}
-                onChange={handleChange} placeholder="Enter your password"
-                className="h-14 bg-white/10 border-2 border-white/20 text-white placeholder:text-gray-500 rounded-2xl pr-14
-                 focus:border-[#FFB380] focus:ring-4 focus:ring-[#FFB380]/20 transition-all font-medium backdrop-blur-sm"/>
-              <button type="button" className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#FFB380] transition-colors p-1"
-                onClick={() => setShowPassword((v) => !v)} tabIndex={-1}>
+              <Input 
+                id="password" 
+                name="password" 
+                type={showPassword ? "text" : "password"} 
+                required 
+                value={formData.password}
+                onChange={handleChange} 
+                placeholder="Enter your password"
+                className="h-14 bg-white/10 border-2 border-white/20 text-white placeholder:text-gray-500 rounded-2xl pr-14 focus:border-[#FFB380] focus:ring-4 focus:ring-[#FFB380]/20 transition-all font-medium backdrop-blur-sm"
+              />
+              <button 
+                type="button" 
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#FFB380] transition-colors p-1"
+                onClick={() => setShowPassword((v) => !v)} 
+                tabIndex={-1}
+              >
                 {showPassword ? <EyeOff size={22} /> : <Eye size={22} />}
               </button>
             </div>
@@ -126,18 +144,17 @@ export function LoginMobile({ handleSubmit, formData, handleChange, error, isLoa
             </div>
           )}
 
-          {/* Action Buttons - Like the reference (Skip/Next style) */}
+          {/* Actions */}
           <div className="flex items-center gap-4 pt-4">
             <Link href="/signup" className="text-gray-400 hover:text-white font-medium transition-colors text-base">
               Sign up
             </Link>
             
-            <Button type="submit" disabled={isLoading} 
-              className="flex-1 h-14 bg-gradient-to-r from-[#FFB380] to-[#FFC99E] hover:from-[#FFC99E] 
-              hover:to-[#FFB380] text-gray-900 font-bold text-base rounded-full shadow-lg shadow-[#FFB380]/30
-               hover:shadow-[#FFB380]/50 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 group 
-               relative overflow-hidden">
-              {/* Button shine effect */}
+            <Button 
+              type="submit" 
+              disabled={isLoading} 
+              className="flex-1 h-14 bg-gradient-to-r from-[#FFB380] to-[#FFC99E] hover:from-[#FFC99E] hover:to-[#FFB380] text-gray-900 font-bold text-base rounded-full shadow-lg shadow-[#FFB380]/30 hover:shadow-[#FFB380]/50 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 group relative overflow-hidden"
+            >
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
               
               {isLoading ? (
@@ -155,7 +172,7 @@ export function LoginMobile({ handleSubmit, formData, handleChange, error, isLoa
           </div>
         </form>
 
-        {/* Bottom spacing */}
+        {/* Spacer */}
         <div className="flex-1" />
         
         {/* Trust Badge */}

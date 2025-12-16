@@ -1,15 +1,14 @@
 'use client'
 
-import AddPlannedDesktop from '@/components/desktop/planned/add-planned'
-import DesktopLayout from '@/components/desktop/layout/desktop-layout'
 import { ProtectedRoute } from '@/components/protected-route'
+import { ResponsiveLayout } from '@/components/responsive-layout'
+import AddPlannedDesktop from '@/components/desktop/planned/add-planned'
+import AddPlannedMobile from '@/components/mobile/planned/add-planned'
 
 export default function AddPlannedPage() {
   return (
     <ProtectedRoute>
-      <DesktopLayout>
-        <AddPlannedDesktop />
-      </DesktopLayout>
+      <ResponsiveLayout mobile={<AddPlannedMobile />} desktop={<AddPlannedDesktop />}/>
     </ProtectedRoute>
   )
 }
