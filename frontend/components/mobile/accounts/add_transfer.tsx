@@ -10,8 +10,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useTheme } from "@/contexts/theme-context"
 import { BankAccount, bankAccountApi } from "@/lib/api/bank/accounts-api"
 import { getButtonStyle } from "@/lib/themes"
-import { movementApi, MovementStatus } from "@/lib/api/bank/movements-api"
 import { CurrencyInput } from "@/lib/util/currency-input"
+import { MovementStatus } from "@/lib/api/types"
+import { movementApi } from "@/lib/api/bank/movements-api"
 
 interface AddTransferDrawerProps {
   open: boolean
